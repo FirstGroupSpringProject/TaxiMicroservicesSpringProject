@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  app-uds: # user-driver-service
+    build: user-driver-service/.  # Собираем образ из Dockerfile
+    container_name: user-driver-service-app
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-uds:5432/user_driver_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      postgres-uds:
+        condition: service_healthy
+    networks:
+      - my-network
+
+  app-ors: # order-ride-service
+    build: order-ride-service/.  # Собираем образ из Dockerfile
+    container_name: order-ride-service-app
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-ors:5432/order_ride_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      postgres-ors:
+        condition: service_healthy
+    networks:
+      - my-network
+
+  postgres-uds:
+    image: postgres:15
+    container_name: postgres-db-uds
+    environment:
+      POSTGRES_DB: user_driver_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_uds:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d user_driver_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - my-network
+
+  postgres-ors:
+    image: postgres:15
+    container_name: postgres-db-ors
+    environment:
+      POSTGRES_DB: order_ride_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_ors:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d order_ride_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - my-network
+
+volumes:
+  postgres_data_uds:
+  postgres_data_ors:
+
+networks:
+  my-network:
+    driver: bridge
