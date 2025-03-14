@@ -13,6 +13,10 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>SpringProject</name>
     <description>SpringProject</description>
+    <modules>
+        <module>order-ride-service</module>
+        <module>user-driver-service</module>
+    </modules>
     <url/>
     <licenses>
         <license/>
