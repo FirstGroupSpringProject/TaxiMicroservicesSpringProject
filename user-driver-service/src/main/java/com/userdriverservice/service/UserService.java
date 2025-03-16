@@ -3,9 +3,6 @@ package com.userdriverservice.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import com.userdriverservice.dto.UserDto;
 import com.userdriverservice.entity.User;
@@ -16,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -56,11 +53,5 @@ public class UserService implements UserDetailsService {
                     .map(userMapper::toDto)
                     .toList();
         }
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByName(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
 }
