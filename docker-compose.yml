@@ -31,6 +31,21 @@ services:
     networks:
       - my-network
 
+  app-pbs: # payment-billing-service
+    build: payment-billing-service/.  # Собираем образ из Dockerfile
+    container_name: payment-billing-service-app
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-pbs:5432/payment_billing_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      postgres-pbs:
+        condition: service_healthy
+    networks:
+      - my-network
+
   postgres-uds:
     image: postgres:15
     container_name: postgres-db-uds
@@ -69,9 +84,29 @@ services:
     networks:
       - my-network
 
+  postgres-pbs:
+    image: postgres:15
+    container_name: postgres-db-pbs
+    environment:
+      POSTGRES_DB: payment_billing_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data_pbs:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d payment_billing_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - my-network
+
 volumes:
   postgres_data_uds:
   postgres_data_ors:
+  postgres_data_pbs:
 
 networks:
   my-network:
