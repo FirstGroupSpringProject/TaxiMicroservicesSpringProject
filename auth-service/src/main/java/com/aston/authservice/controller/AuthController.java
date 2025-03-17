@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+@CrossOrigin
 @RestController
-@RequestMapping("/api/v1/auth") // ✅ Привели к единому стилю
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -26,13 +27,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestParam String name, @RequestParam String password) {
-        LOG.info("Login attempt for user: {}", name);
-        Optional<String> token = authService.authenticate(name, password);
+    public ResponseEntity<String> login(@RequestBody User user) {
+        LOG.info("Login attempt for user: {}", user.getName());
+        Optional<String> token = authService.authenticate(user.getName(), user.getPassword());
 
         return token.map(ResponseEntity::ok)
                 .orElseGet(() -> {
-                    LOG.warn("Invalid login attempt for user: {}", name);
+                    LOG.warn("Invalid login attempt for user: {}", user.getName());
                     return ResponseEntity.status(401).body("Invalid credentials");
                 });
     }

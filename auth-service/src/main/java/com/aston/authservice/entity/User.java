@@ -15,7 +15,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users") // Здесь нормально, так как auth-service работает с логином
+@Table(name = "users")
 public class User implements UserDetails {
 
     @Id
@@ -33,7 +33,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private Role role;
+    private Role role = Role.USER;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

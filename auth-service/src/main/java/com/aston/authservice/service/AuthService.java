@@ -1,5 +1,6 @@
 package com.aston.authservice.service;
 
+import com.aston.authservice.entity.Role;
 import com.aston.authservice.entity.User;
 import com.aston.authservice.repository.UserRepository;
 import com.aston.authservice.security.JwtService;
@@ -18,7 +19,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public String register(User user) {
+        if(userRepository.findByName(user.getName()).isPresent()) {
+            throw new IllegalArgumentException("User is already exists");
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        if(user.getRole() == null) {
+            user.setRole(Role.USER);
+        }
+
         userRepository.save(user);
         return jwtService.generateToken(user);
     }
