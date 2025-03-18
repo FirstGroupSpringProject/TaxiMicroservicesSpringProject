@@ -5,8 +5,11 @@ import com.aston.authservice.entity.User;
 import com.aston.authservice.repository.UserRepository;
 import com.aston.authservice.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
