@@ -97,7 +97,6 @@ public class InvoiceController {
                                     @PathVariable UUID userId) {
         invoiceDto.setUserId(userId);
         invoiceDto.setDueDate(LocalDateTime.now());
-        System.out.println(invoiceDto);
         return invoiceService.update(invoiceId, invoiceDto)
                 .orElseThrow(() -> new BadRequestException(invoiceId));
     }
