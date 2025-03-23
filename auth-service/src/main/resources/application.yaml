@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: auth-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/auth_db
+    username:  # тут юзернейм
+    password:  # тут пароль
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      mode: never
+      schema-locations: classpath:/sql/init-auth.sql
+
+# Конфиг взаимодействия с другими микросервисами
+#services:
+#  user-driver-service: http://localhost:8081
+
+jwt:
+  secret: a67VjWzQdXz3YpNcRfT8D9PQk4LmnZX5CbOaRtWmXo=
