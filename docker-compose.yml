@@ -1,6 +1,8 @@
 version: '3.8'
 
 services:
+
+
   app-uds: # user-driver-service
     build: user-driver-service/.  # Собираем образ из Dockerfile
     container_name: user-driver-service-app
@@ -40,6 +42,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-pbs:5432/payment_billing_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      SPRING_LIQUIBASE_CHANGE_LOG: classpath:src/main/resources/db/changelog/db.changelog-master.xml
+      SPRING_LIQUIBASE_ENABLED: true
     depends_on:
       postgres-pbs:
         condition: service_healthy
@@ -103,6 +107,40 @@ services:
     networks:
       - my-network
 
+  liquibase-pbs:
+    image: liquibase/liquibase:4.30.0
+    depends_on:
+      postgres-pbs:
+        condition: service_healthy
+    volumes:
+      - ./payment-billing-service/src/main/resources/db/changelog:/liquibase/changelog
+    working_dir: /liquibase/changelog
+    command:
+      - --changeLogFile=db.changelog-master.yaml
+      - --url=jdbc:postgresql://postgres-pbs:5432/payment_billing_db
+      - --username=root
+      - --password=root
+      - update
+    networks:
+      - my-network
+
+
+  liquibase-uds:
+    image: liquibase/liquibase:4.30.0
+    depends_on:
+      postgres-uds:
+        condition: service_healthy
+    volumes:
+      - ./user-driver-service/src/main/resources/db/changelog:/liquibase/changelog
+    working_dir: /liquibase/changelog
+    command:
+      - --changeLogFile=db.changelog-master.yaml
+      - --url=jdbc:postgresql://postgres-uds:5432/user_driver_db
+      - --username=root
+      - --password=root
+      - update
+    networks:
+      - my-network
 volumes:
   postgres_data_uds:
   postgres_data_ors:

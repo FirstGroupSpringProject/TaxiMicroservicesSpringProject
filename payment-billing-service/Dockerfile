@@ -7,6 +7,8 @@ WORKDIR /app
 # Копируем исходники и настройки Maven
 COPY pom.xml .
 COPY src ./src
+COPY target/payment-billing-service.jar app.jar
+COPY src/main/resources/db/changelog /app/db/changelog
 
 # Собираем проект
 RUN mvn clean package -DskipTests

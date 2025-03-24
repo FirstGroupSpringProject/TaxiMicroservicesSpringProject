@@ -9,6 +9,7 @@ import com.orderrideservice.entity.Order;
 import com.orderrideservice.mapper.OrderMapper;
 import com.orderrideservice.repository.OrderRepository;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -34,7 +35,7 @@ public class OrderService {
         List<Order> orders = orderRepository.findAll();
         if (orders.isEmpty()) {
             log.info("No orders found");
-            return null;
+            return Collections.emptyList();
         } else {
             return orders.stream()
                     .map(orderMapper::toDto)

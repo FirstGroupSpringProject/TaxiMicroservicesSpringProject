@@ -6,6 +6,9 @@ server:
 spring:
   application:
     name: user-driver-service
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    enabled: true
   datasource: # Подключение в БД
     url: jdbc:postgresql://localhost:5432/user_driver_db
     username: root
@@ -26,10 +29,11 @@ spring:
 # LOGGING
 logging:
   level:
-    root: info                            # уровень для корневого логгера
-    com.*: debug  # уровень для пользовательского логгера
+    root: info    # уровень для корневого логгера
+    com.userdriverservice.*: debug  # уровень для пользовательского логгера
+    liquibase: debug  # уровень для логгера Liquibase
   file:
-    path: logs/user-driver-service/       # путь для файлов логов
+    path: logs/payment-billing-service/       # путь для файлов логов
   logback:
     rollingpolicy:
       max-file-size: 10MB

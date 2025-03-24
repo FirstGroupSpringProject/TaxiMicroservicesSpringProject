@@ -70,7 +70,7 @@ public class PaymentController {
      * Удаляет платеж по заданному идентификатору.
      *
      * @param paymentId - идентификатор платежа, который нужно удалить
-     * @return объект PaymentDto с информацией о удаленном платеже
+     * @return объект PaymentDto с информацией об удаленном платеже
      * @throws NotFoundException если платеж с указанным идентификатором не найден
      */
     @DeleteMapping("/payments/{paymentId}")

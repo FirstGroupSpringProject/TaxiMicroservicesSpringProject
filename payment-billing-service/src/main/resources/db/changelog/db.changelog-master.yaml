@@ -1,0 +1,305 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Team
+      changes:
+        - dropTable:
+            tableName: payments
+
+  - changeSet:
+      id: 2
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TABLE IF EXISTS invoices;
+
+  - changeSet:
+      id: 3
+      author: Team
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+  - changeSet:
+      id: 4
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TYPE IF EXISTS status_enum;
+
+  - changeSet:
+      id: 5
+      author: Team
+      changes:
+        - sql:
+            sql: CREATE TYPE status_enum AS ENUM ('PENDING', 'SUCCEEDED', 'FAILED');
+
+  - changeSet:
+      id: 6
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TYPE IF EXISTS payment_method_enum;
+
+  - changeSet:
+      id: 7
+      author: Team
+      changes:
+        - sql:
+            sql: CREATE TYPE payment_method_enum AS ENUM ('CARD', 'CASH', 'MOBILE');
+
+  - changeSet:
+      id: 8
+      author: Team
+      changes:
+        - createTable:
+            tableName: payments
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: amount
+                  type: numeric(10, 3)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: status_enum
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 9
+      author: Team
+      changes:
+        - createTable:
+            tableName: invoices
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payment_method
+                  type: payment_method_enum
+                  constraints:
+                    nullable: false
+              - column:
+                  name: due_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 10
+      author: Team
+      changes:
+        - insert:
+            tableName: payments
+            columns:
+              - column:
+                  name: amount
+                  valueNumeric: 350.6
+              - column:
+                  name: status
+                  value: PENDING
+        - insert:
+            tableName: payments
+            columns:
+              - column:
+                  name: amount
+                  valueNumeric: 168.6
+              - column:
+                  name: status
+                  value: SUCCEEDED
+        - insert:
+            tableName: payments
+            columns:
+              - column:
+                  name: amount
+                  valueNumeric: 564.35
+              - column:
+                  name: status
+                  value: FAILED
+        - insert:
+            tableName: payments
+            columns:
+              - column:
+                  name: amount
+                  valueNumeric: 88.34
+              - column:
+                  name: status
+                  value: PENDING
+        - insert:
+            tableName: payments
+            columns:
+              - column:
+                  name: amount
+                  valueNumeric: 1234.16
+              - column:
+                  name: status
+                  value: SUCCEEDED
+
+  - changeSet:
+      id: 11
+      author: Team
+      changes:
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c
+              - column:
+                  name: payment_method
+                  value: CARD
+              - column:
+                  name: due_date
+                  value: 2025-02-14T15:30:40.811420500
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: 65f08c74-2703-4dd9-919e-04164fe87023
+              - column:
+                  name: payment_method
+                  value: CASH
+              - column:
+                  name: due_date
+                  value: 2025-03-15T18:33:40.436444700
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: 3f9611f4-f29e-4b4b-bfbf-602f46a36192
+              - column:
+                  name: payment_method
+                  value: MOBILE
+              - column:
+                  name: due_date
+                  value: 2024-08-25T12:13:40.809097500
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: b8b20b96-5cc2-4c32-95a4-3e1c1e01dd0c
+              - column:
+                  name: payment_method
+                  value: CARD
+              - column:
+                  name: due_date
+                  value: 2022-03-18T16:23:40.111420500
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: b8b20b96-6cc2-4c32-95a4-3e1c1e01dd0c
+              - column:
+                  name: payment_method
+                  value: CASH
+              - column:
+                  name: due_date
+                  value: 2024-12-19T20:36:18.902052200
+  - changeSet:
+      id: 12
+      author: Team
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: name
+                  value: "John Doe"
+              - column:
+                  name: age
+                  valueNumeric: 30
+              - column:
+                  name: phone
+                  value: "123-456-7890"
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: name
+                  value: "Jane Smith"
+              - column:
+                  name: age
+                  valueNumeric: 25
+              - column:
+                  name: phone
+                  value: "098-765-4321"
+
+  - changeSet:
+      id: 13
+      author: Team
+      changes:
+        - insert:
+            tableName: drivers
+            columns:
+              - column:
+                  name: name
+                  value: "Driver One"
+              - column:
+                  name: orders_completed
+                  valueNumeric: 15
+              - column:
+                  name: current_status
+                  value: "AVAILABLE"
+        - insert:
+            tableName: drivers
+            columns:
+              - column:
+                  name: name
+                  value: "Driver Two"
+              - column:
+                  name: orders_completed
+                  valueNumeric: 20
+              - column:
+                  name: current_status
+                  value: "BUSY"
+
+  - changeSet:
+      id: 14
+      author: Team
+      changes:
+        - insert:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: driver_id
+                  value: "123e4567-e89b-12d3-a456-426614174000"
+              - column:
+                  name: model
+                  value: "Model X"
+              - column:
+                  name: number
+                  value: "ABC123"
+        - insert:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: driver_id
+                  value: "123e4567-e89b-12d3-a456-426614174001"
+              - column:
+                  name: model
+                  value: "Model Y"
+              - column:
+                  name: number
+                  value: "XYZ789"

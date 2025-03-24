@@ -1,40 +1,40 @@
 -- DROP TABLE payments;
 -- DROP TABLE invoices;
+--
+-- CREATE
+--     EXTENSION IF NOT EXISTS "uuid-ossp";
+--
+-- -- DROP TYPE status_enum;
+-- CREATE TYPE status_enum AS ENUM ('PENDING', 'SUCCEEDED', 'FAILED');
+--
+-- -- DROP TYPE payment_method_enum;
+-- CREATE TYPE payment_method_enum AS ENUM ('CARD', 'CASH', 'MOBILE');
+--
+-- CREATE TABLE payments
+-- (
+--     id     UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+--     amount NUMERIC(10, 3) NOT NULL,
+--     status status_enum    NOT NULL
+-- );
+--
+-- CREATE TABLE invoices
+-- (
+--     id             UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+--     user_id        UUID                NOT NULL,
+--     payment_method payment_method_enum NOT NULL,
+--     due_date       TIMESTAMP           NOT NULL
+-- );
+--
+-- INSERT INTO payments (amount, status)
+-- VALUES (350.6, 'PENDING'),
+--        (168.6, 'SUCCEEDED'),
+--        (564.35, 'FAILED'),
+--        (88.34, 'PENDING'),
+--        (1234.16, 'SUCCEEDED');
 
-CREATE
-    EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- DROP TYPE status_enum;
-CREATE TYPE status_enum AS ENUM ('PENDING', 'SUCCEEDED', 'FAILED');
-
--- DROP TYPE payment_method_enum;
-CREATE TYPE payment_method_enum AS ENUM ('CARD', 'CASH', 'MOBILE');
-
-CREATE TABLE payments
-(
-    id     UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    amount NUMERIC(10, 3) NOT NULL,
-    status status_enum    NOT NULL
-);
-
-CREATE TABLE invoices
-(
-    id             UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id        UUID                NOT NULL,
-    payment_method payment_method_enum NOT NULL,
-    due_date       TIMESTAMP           NOT NULL
-);
-
-INSERT INTO payments (amount, status)
-VALUES (350.6, 'PENDING'),
-       (168.6, 'SUCCEEDED'),
-       (564.35, 'FAILED'),
-       (88.34, 'PENDING'),
-       (1234.16, 'SUCCEEDED');
-
-INSERT INTO invoices (user_id, payment_method, due_date)
-VALUES ('b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c', 'CARD', '2025-02-14T15:30:40.811420500'),
-       ('65f08c74-2703-4dd9-919e-04164fe87023', 'CASH', '2025-03-15T18:33:40.436444700'),
-       ('3f9611f4-f29e-4b4b-bfbf-602f46a36192', 'MOBILE', '2024-08-25T12:13:40.809097500'),
-       ('b8b20b96-5cc2-4c32-95a4-3e1c1e01dd0c', 'CARD', '2022-03-18T16:23:40.111420500'),
-       ('b8b20b96-6cc2-4c32-95a4-3e1c1e01dd0c', 'CASH', '2024-12-19T20:36:18.902052200');
+-- INSERT INTO invoices (user_id, payment_method, due_date)
+-- VALUES ('b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c', 'CARD', '2025-02-14T15:30:40.811420500'),
+--        ('65f08c74-2703-4dd9-919e-04164fe87023', 'CASH', '2025-03-15T18:33:40.436444700'),
+--        ('3f9611f4-f29e-4b4b-bfbf-602f46a36192', 'MOBILE', '2024-08-25T12:13:40.809097500'),
+--        ('b8b20b96-5cc2-4c32-95a4-3e1c1e01dd0c', 'CARD', '2022-03-18T16:23:40.111420500'),
+--        ('b8b20b96-6cc2-4c32-95a4-3e1c1e01dd0c', 'CASH', '2024-12-19T20:36:18.902052200');

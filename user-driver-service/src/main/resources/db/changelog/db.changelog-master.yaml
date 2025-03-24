@@ -1,0 +1,120 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Team
+      validCheckSum: 9:acb386377c967281c63ee78fd86c82ee
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+  - changeSet:
+      id: 2
+      author: Team
+      validCheckSum: 9:6f4db483f716cef28cb26400165f4de1
+      changes:
+        - sql:
+            sql: DROP TYPE IF EXISTS driver_status_enum;
+
+  - changeSet:
+      id: 3
+      author: Team
+      validCheckSum: 9:2d20858ba6e723f1fe65931dd055c670
+      changes:
+        - sql:
+            sql: CREATE TYPE driver_status_enum AS ENUM ('AVAILABLE', 'BUSY', 'OFFLINE');
+
+  - changeSet:
+      id: 4
+      author: Team
+      validCheckSum: 9:81c537de32df5800f4a00e09afcd6cc7
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: age
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: 5
+      author: Team
+      validCheckSum: 9:a40036accd59335aff0dde57b4958ba0
+      changes:
+        - createTable:
+            tableName: drivers
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: orders_completed
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: current_status
+                  type: driver_status_enum
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 6
+      author: Team
+      validCheckSum: 9:e04d060cf6f4e007708ce10b1378a812
+      changes:
+        - createTable:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: driver_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: model
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: number
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+

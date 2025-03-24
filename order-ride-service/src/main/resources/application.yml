@@ -8,8 +8,8 @@ spring:
     name: order-ride-service
   datasource: # Подключение в БД
     url: jdbc:postgresql://localhost:5432/order_ride_db
-    username: root
-    password: root
+    username: postgres
+    password: admin
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 20000

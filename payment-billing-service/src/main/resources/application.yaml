@@ -6,6 +6,11 @@ server:
 spring:
   application:
     name: payment-billing-service
+
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    enabled: true
+
   datasource: # Подключение в БД
     url: jdbc:postgresql://localhost:5432/payment-billing_db
     #url: jdbc:postgresql://localhost:5432/postgres
@@ -29,9 +34,11 @@ logging:
   level:
     root: info    # уровень для корневого логгера
     com.paymentbillingservice.*: debug  # уровень для пользовательского логгера
+    liquibase: debug  # уровень для логгера Liquibase
   file:
     path: logs/payment-billing-service/       # путь для файлов логов
   logback:
     rollingpolicy:
       max-file-size: 10MB
       max-history: 7
+
