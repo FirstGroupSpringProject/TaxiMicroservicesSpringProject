@@ -1,32 +1,49 @@
 databaseChangeLog:
   - changeSet:
-      id: 1
+      id: 13
       author: Team
-      validCheckSum: 9:acb386377c967281c63ee78fd86c82ee
+      changes:
+        - dropTable:
+            tableName: users
+
+  - changeSet:
+      id: 14
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TABLE IF EXISTS drivers;
+
+  - changeSet:
+      id: 15
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TABLE IF EXISTS vehicles;
+
+  - changeSet:
+      id: 16
+      author: Team
       changes:
         - sql:
             sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
   - changeSet:
-      id: 2
+      id: 17
       author: Team
-      validCheckSum: 9:6f4db483f716cef28cb26400165f4de1
       changes:
         - sql:
             sql: DROP TYPE IF EXISTS driver_status_enum;
 
   - changeSet:
-      id: 3
+      id: 18
       author: Team
-      validCheckSum: 9:2d20858ba6e723f1fe65931dd055c670
       changes:
         - sql:
             sql: CREATE TYPE driver_status_enum AS ENUM ('AVAILABLE', 'BUSY', 'OFFLINE');
 
   - changeSet:
-      id: 4
+      id: 19
       author: Team
-      validCheckSum: 9:81c537de32df5800f4a00e09afcd6cc7
       changes:
         - createTable:
             tableName: users
@@ -56,9 +73,8 @@ databaseChangeLog:
                     unique: true
 
   - changeSet:
-      id: 5
+      id: 20
       author: Team
-      validCheckSum: 9:a40036accd59335aff0dde57b4958ba0
       changes:
         - createTable:
             tableName: drivers
@@ -87,9 +103,8 @@ databaseChangeLog:
                     nullable: false
 
   - changeSet:
-      id: 6
+      id: 21
       author: Team
-      validCheckSum: 9:e04d060cf6f4e007708ce10b1378a812
       changes:
         - createTable:
             tableName: vehicles
@@ -118,3 +133,107 @@ databaseChangeLog:
                     nullable: false
                     unique: true
 
+  - changeSet:
+      id: 22
+      author: Team
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  value: "John Doe"
+              - column:
+                  name: age
+                  valueNumeric: 30
+              - column:
+                  name: phone
+                  value: "+1234567890"
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  value: "Jane Smith"
+              - column:
+                  name: age
+                  valueNumeric: 25
+              - column:
+                  name: phone
+                  value: "+0987654321"
+
+  - changeSet:
+      id: 23
+      author: Team
+      changes:
+        - insert:
+            tableName: drivers
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  value: "Driver One"
+              - column:
+                  name: orders_completed
+                  valueNumeric: 10
+              - column:
+                  name: current_status
+                  value: "AVAILABLE"
+        - insert:
+            tableName: drivers
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  value: "Driver Two"
+              - column:
+                  name: orders_completed
+                  valueNumeric: 5
+              - column:
+                  name: current_status
+                  value: "BUSY"
+
+  - changeSet:
+      id: 24
+      author: Team
+      changes:
+        - insert:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: driver_id
+                  value: "b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c"
+              - column:
+                  name: model
+                  value: "Toyota Corolla"
+              - column:
+                  name: number
+                  value: "ABC123"
+        - insert:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: driver_id
+                  value: "65f08c74-2703-4dd9-919e-04164fe87023"
+              - column:
+                  name: model
+                  value: "Honda Civic"
+              - column:
+                  name: number
+                  value: "XYZ789"

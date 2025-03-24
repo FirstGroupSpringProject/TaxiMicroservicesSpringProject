@@ -1,13 +1,13 @@
 package com.userdriverservice.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.userdriverservice.dto.DriverDto;
 import com.userdriverservice.entity.Driver;
 import com.userdriverservice.mapper.DriverMapper;
 import com.userdriverservice.repository.DriverRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,7 +42,7 @@ public class DriverService {
         List<Driver> drivers = driverRepository.findAll();
         if (drivers.isEmpty()) {
             log.info("No drivers found");
-            return null;
+            return List.of();
         } else {
             return drivers.stream()
                     .map(driverMapper::toDto)
