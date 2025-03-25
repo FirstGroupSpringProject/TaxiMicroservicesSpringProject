@@ -10,15 +10,8 @@ import java.util.UUID;
  * Это исключение указывает на то, что сервер не может найти запрашиваемую
  * сущность по предоставленному идентификатору. Оно возвращает статус HTTP 404 (NOT FOUND).
  */
-@ResponseStatus(HttpStatus.NOT_FOUND)
 public class NotFoundException extends RuntimeException {
-
-    /**
-     * Конструктор исключения, принимающий идентификатор сущности.
-     *
-     * @param id идентификатор сущности, которая не найдена.
-     */
     public NotFoundException(UUID id) {
-        super("Entity is not found #" + id);
+        super("Driver with id " + id + " not found");
     }
 }

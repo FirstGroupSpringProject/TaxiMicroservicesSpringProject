@@ -7,8 +7,8 @@ WORKDIR /app
 # Копируем исходники и настройки Maven
 COPY pom.xml .
 COPY src ./src
-COPY target/payment-billing-service.jar app.jar
-COPY src/main/resources/db/changelog /app/db/changelog
+#COPY target/payment-billing-service.jar app.jar
+COPY src/main/resources/db/changelog /app/src/main/resources/db/changelog
 
 # Собираем проект
 RUN mvn clean package -DskipTests
@@ -22,8 +22,11 @@ WORKDIR /app
 # Копируем JAR-файл из стадии сборки
 COPY --from=build /app/target/*.jar app.jar
 
+# Копируем файлы миграций Liquibase
+COPY --from=build /app/src/main/resources/db/changelog /app/db/changelog
+
 # Открываем порт
-EXPOSE 8083
+EXPOSE 8085
 
 # Команда запуска
 ENTRYPOINT ["java", "-jar", "app.jar"]

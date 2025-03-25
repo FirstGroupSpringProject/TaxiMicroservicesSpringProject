@@ -1,31 +1,10 @@
 databaseChangeLog:
   - changeSet:
-      id: 13
-      author: Team
-      changes:
-        - dropTable:
-            tableName: users
-
-  - changeSet:
-      id: 14
-      author: Team
-      changes:
-        - sql:
-            sql: DROP TABLE IF EXISTS drivers;
-
-  - changeSet:
-      id: 15
-      author: Team
-      changes:
-        - sql:
-            sql: DROP TABLE IF EXISTS vehicles;
-
-  - changeSet:
       id: 16
       author: Team
       changes:
         - sql:
-            sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+            sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
 
   - changeSet:
       id: 17
@@ -33,13 +12,6 @@ databaseChangeLog:
       changes:
         - sql:
             sql: DROP TYPE IF EXISTS driver_status_enum;
-
-  - changeSet:
-      id: 18
-      author: Team
-      changes:
-        - sql:
-            sql: CREATE TYPE driver_status_enum AS ENUM ('AVAILABLE', 'BUSY', 'OFFLINE');
 
   - changeSet:
       id: 19
@@ -98,7 +70,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: current_status
-                  type: driver_status_enum
+                  type: varchar(20)
                   constraints:
                     nullable: false
 
@@ -186,7 +158,7 @@ databaseChangeLog:
                   valueNumeric: 10
               - column:
                   name: current_status
-                  value: "AVAILABLE"
+                  value: 2
         - insert:
             tableName: drivers
             columns:
@@ -201,7 +173,7 @@ databaseChangeLog:
                   valueNumeric: 5
               - column:
                   name: current_status
-                  value: "BUSY"
+                  value: 1
 
   - changeSet:
       id: 24

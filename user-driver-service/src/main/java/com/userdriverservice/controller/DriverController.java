@@ -29,8 +29,16 @@ public class DriverController {
 
     @PostMapping
     public ResponseEntity<DriverDto> createDriver(@RequestBody DriverDto driverDto) {
+        // Валидация статуса
+        if (!isValidStatus(driverDto.getCurrentStatus())) {
+            return ResponseEntity.badRequest().build();
+        }
         DriverDto createdDriver = driverService.createDriver(driverDto);
         return ResponseEntity.ok(createdDriver);
+    }
+
+    private boolean isValidStatus(String status) {
+        return status != null && (status.equals("AVAILABLE") || status.equals("BUSY") || status.equals("OFFLINE"));
     }
 
     @GetMapping

@@ -12,9 +12,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-uds:5432/user_driver_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-master.yaml
+      SPRING_LIQUIBASE_ENABLED: true
     depends_on:
       postgres-uds:
         condition: service_healthy
+      liquibase-uds:
+        condition: service_completed_successfully
     networks:
       - my-network
 
@@ -42,7 +46,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-pbs:5432/payment_billing_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
-      SPRING_LIQUIBASE_CHANGE_LOG: classpath:src/main/resources/db/changelog/db.changelog-master.xml
+      SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-master.yaml
       SPRING_LIQUIBASE_ENABLED: true
     depends_on:
       postgres-pbs:

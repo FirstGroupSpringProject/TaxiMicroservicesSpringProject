@@ -4,10 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.orderrideservice.dto.RouteDto;
-import com.orderrideservice.entity.Route;
-import com.orderrideservice.mapper.RouteMapper;
-import com.orderrideservice.repository.RouteRepository;
 
 import java.util.List;
 

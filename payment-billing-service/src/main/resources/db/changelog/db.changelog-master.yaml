@@ -3,8 +3,8 @@ databaseChangeLog:
       id: 1
       author: Team
       changes:
-        - dropTable:
-            tableName: payments
+        - sql:
+            sql: DROP TABLE IF EXISTS payments CASCADE;
 
   - changeSet:
       id: 2

@@ -9,6 +9,7 @@ spring:
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yaml
     enabled: true
+    clear-checksums: true
   datasource: # Подключение в БД
     url: jdbc:postgresql://localhost:5432/user_driver_db
     username: root
