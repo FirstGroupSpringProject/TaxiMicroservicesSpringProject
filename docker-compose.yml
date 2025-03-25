@@ -23,7 +23,7 @@ services:
       - my-network
 
   app-ors: # order-ride-service
-    build: order-ride-service/.  # Собираем образ из Dockerfile
+    build: order-ride-service/.
     container_name: order-ride-service-app
     ports:
       - "8082:8082"
@@ -31,9 +31,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-ors:5432/order_ride_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-master.yaml
+      SPRING_LIQUIBASE_ENABLED: true
     depends_on:
       postgres-ors:
         condition: service_healthy
+      liquibase-ors:
+        condition: service_completed_successfully
     networks:
       - my-network
 
@@ -145,6 +149,45 @@ services:
       - update
     networks:
       - my-network
+  liquibase-ors:
+    image: liquibase/liquibase:4.30.0
+    depends_on:
+      postgres-ors:
+        condition: service_healthy
+    volumes:
+      - ./order-ride-service/src/main/resources/db/changelog:/liquibase/changelog
+    working_dir: /liquibase/changelog
+    command:
+      - --changeLogFile=db.changelog-master.yaml
+      - --url=jdbc:postgresql://postgres-ors:5432/order_ride_db
+      - --username=root
+      - --password=root
+      - update
+    networks:
+      - my-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - my-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    networks:
+      - my-network
+
 volumes:
   postgres_data_uds:
   postgres_data_ors:

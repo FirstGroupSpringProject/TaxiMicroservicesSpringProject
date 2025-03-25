@@ -18,6 +18,22 @@ spring:
     hikari:
       connection-timeout: 20000
       maximum-pool-size: 10
+  kafka:
+    bootstrap-servers: kafka:9092
+    topics:
+      driver-events: driver-events
+      ride-events: ride-events
+    consumer:
+      group-id: ${spring.application.name}-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
   jpa: # Настройки hibernate
     hibernate:
       ddl-auto: update
@@ -39,3 +55,4 @@ logging:
     rollingpolicy:
       max-file-size: 10MB
       max-history: 7
+

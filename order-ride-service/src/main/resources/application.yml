@@ -1,4 +1,3 @@
-# Порт работы микросервиса
 server:
   port: 8082
 
@@ -6,6 +5,10 @@ server:
 spring:
   application:
     name: order-ride-service
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    enabled: true
+    clear-checksums: true
   datasource: # Подключение в БД
     url: jdbc:postgresql://localhost:5432/order_ride_db
     username: postgres
@@ -14,9 +17,24 @@ spring:
     hikari:
       connection-timeout: 20000
       maximum-pool-size: 10
+kafka:
+  bootstrap-servers: kafka:9092
+  consumer:
+    group-id: ${spring.application.name}-group
+    auto-offset-reset: earliest
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    properties:
+      spring.json.trusted.packages: "*"
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  topics:
+    driver-events: driver-events
+
   jpa: # Настройки hibernate
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -26,10 +44,10 @@ spring:
 # LOGGING
 logging:
   level:
-    root: info                            # уровень для корневого логгера
-    com.orderrideservice.*: debug  # уровень для пользовательского логгера
+    root: info
+    com.orderrideservice.*: debug
   file:
-    path: logs/order-ride-service/       # путь для файлов логов
+    path: logs/order-ride-service/
   logback:
     rollingpolicy:
       max-file-size: 10MB

@@ -15,6 +15,7 @@ import java.util.UUID;
 public class Ride {
 
     @Id
+
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
@@ -27,4 +28,6 @@ public class Ride {
     @Column(name = "distance", nullable = false)
     private Double distance;
 
+    @Transient
+    private DriverCache driverCache;
 }
