@@ -1,27 +1,23 @@
-# Базовый образ с Java 17 и Maven
+# Стадия 1: Сборка common-events и основного сервиса
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
-
-# Рабочая директория
 WORKDIR /app
 
-# Копируем исходники и настройки Maven
-COPY pom.xml .
-COPY src ./src
+# --- Сборка common-events ---
+COPY common-events/pom.xml ./common-events/pom.xml
+COPY common-events/src ./common-events/src
+RUN mvn -f ./common-events/pom.xml clean install -DskipTests
 
-# Собираем проект
-RUN mvn clean package -DskipTests
+# --- Сборка order-ride-service ---
+COPY order-ride-service/pom.xml ./order-ride-service/pom.xml
+COPY order-ride-service/src ./order-ride-service/src
+RUN mvn -f ./order-ride-service/pom.xml clean package -DskipTests
 
-# Финальный образ
+# Стадия 2: Финальный образ
 FROM eclipse-temurin:17-jre-alpine
-
-# Рабочая директория
 WORKDIR /app
 
-# Копируем JAR-файл из стадии сборки
-COPY --from=build /app/target/*.jar app.jar
+# Копируем JAR из target папки order-ride-service
+COPY --from=build /app/order-ride-service/target/*.jar app.jar
 
-# Открываем порт
-EXPOSE 8083
-
-# Команда запуска
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "app.jar"]

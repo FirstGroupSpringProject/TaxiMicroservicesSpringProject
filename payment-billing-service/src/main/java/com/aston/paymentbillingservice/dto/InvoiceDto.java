@@ -19,10 +19,10 @@ import java.util.UUID;
 @ToString
 public class InvoiceDto {
 
-    private UUID id; // Идентификатор
-    private UUID userId; // // Идентификатор пользователя
-    private PaymentMethod paymentMethod; // Метод оплаты
-    private LocalDateTime dueDate; // Срок оплаты
+    private UUID id;
+    private UUID userId;
+    private PaymentMethod paymentMethod;
+    private LocalDateTime dueDate;
 
     @Override
     public boolean equals(Object o) {

@@ -7,7 +7,7 @@ package com.aston.paymentbillingservice.entity;
  */
 public enum PaymentMethod {
 
-    CARD, // Карта
-    CASH, // Наличные
-    MOBILE // Мобильный платеж
+    CARD,
+    CASH,
+    MOBILE
 }

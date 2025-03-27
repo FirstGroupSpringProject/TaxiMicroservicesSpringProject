@@ -1,0 +1,271 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TABLE IF EXISTS payments CASCADE;
+
+  - changeSet:
+      id: 2
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TABLE IF EXISTS invoices;
+
+  - changeSet:
+      id: 3
+      author: Team
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+  - changeSet:
+      id: 4
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TYPE IF EXISTS status_enum;
+
+  - changeSet:
+      id: 5
+      author: Team
+      changes:
+        - sql:
+            sql: CREATE TYPE status_enum AS ENUM ('PENDING', 'SUCCEEDED', 'FAILED');
+
+  - changeSet:
+      id: 6
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TYPE IF EXISTS payment_method_enum;
+
+  - changeSet:
+      id: 7
+      author: Team
+      changes:
+        - sql:
+            sql: CREATE TYPE payment_method_enum AS ENUM ('CARD', 'CASH', 'MOBILE');
+
+  - changeSet:
+      id: 8
+      author: Team
+      changes:
+        - createTable:
+            tableName: payments
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: amount
+                  type: numeric(10, 3)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: status_enum
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 9
+      author: Team
+      changes:
+        - createTable:
+            tableName: invoices
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payment_method
+                  type: payment_method_enum
+                  constraints:
+                    nullable: false
+              - column:
+                  name: due_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+
+
+  - changeSet:
+      id: 11
+      author: Team
+      changes:
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c
+              - column:
+                  name: payment_method
+                  value: CARD
+              - column:
+                  name: due_date
+                  value: 2025-02-14T15:30:40.811420500
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: 65f08c74-2703-4dd9-919e-04164fe87023
+              - column:
+                  name: payment_method
+                  value: CASH
+              - column:
+                  name: due_date
+                  value: 2025-03-15T18:33:40.436444700
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: 3f9611f4-f29e-4b4b-bfbf-602f46a36192
+              - column:
+                  name: payment_method
+                  value: MOBILE
+              - column:
+                  name: due_date
+                  value: 2024-08-25T12:13:40.809097500
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: b8b20b96-5cc2-4c32-95a4-3e1c1e01dd0c
+              - column:
+                  name: payment_method
+                  value: CARD
+              - column:
+                  name: due_date
+                  value: 2022-03-18T16:23:40.111420500
+        - insert:
+            tableName: invoices
+            columns:
+              - column:
+                  name: user_id
+                  value: b8b20b96-6cc2-4c32-95a4-3e1c1e01dd0c
+              - column:
+                  name: payment_method
+                  value: CASH
+              - column:
+                  name: due_date
+                  value: 2024-12-19T20:36:18.902052200
+  - changeSet:
+      id: 12-step1-add-nullable-columns
+      author: Team
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: payments
+                columnName: order_id
+      changes:
+        - addColumn:
+            tableName: payments
+            columns:
+              - column:
+                  name: order_id
+                  type: uuid
+                  constraints:
+                    nullable: true
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: true
+  - changeSet:
+      id: 12-step2-update-existing-rows
+      author: Team
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: payments
+                columnName: order_id
+      changes:
+        - update:
+            tableName: payments
+            columns:
+              - column:
+                  name: order_id
+                  value: '00000000-0000-0000-0000-000000000000' # Заглушка
+              - column:
+                  name: user_id
+                  value: '00000000-0000-0000-0000-000000000000'
+  - changeSet:
+      id: 12-step3-set-not-null
+      author: Team
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: payments
+                columnName: order_id
+      changes:
+        - addNotNullConstraint:
+            tableName: payments
+            columnName: order_id
+            columnDataType: uuid
+        - addNotNullConstraint:
+            tableName: payments
+            columnName: user_id
+            columnDataType: uuid
+
+  - changeSet:
+      id: 13
+      author: Team
+      preConditions:
+        - onFail: HALT
+        - columnExists:
+            tableName: payments
+            columnName: order_id
+        - columnExists:
+            tableName: payments
+            columnName: user_id
+      changes:
+        - addUniqueConstraint:
+            tableName: payments
+            columnNames: order_id
+            constraintName: uc_payments_order_id
+        - createIndex:
+            tableName: payments
+            indexName: idx_payments_user_id
+            columns:
+              - column:
+                  name: user_id
+  - changeSet:
+      id: 14
+      author: Team
+      changes:
+        - insert:
+            tableName: payments
+            columns:
+              - column: { name: order_id, value: 'b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c' }
+              - column: { name: user_id, value: 'b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c' }
+              - column: { name: amount, valueNumeric: 350.6 }
+              - column: { name: status, value: PENDING }
+        - insert:
+            tableName: payments
+            columns:
+              - column: { name: order_id, value: '65f08c74-2703-4dd9-919e-04164fe87023' }
+              - column: { name: user_id, value: '65f08c74-2703-4dd9-919e-04164fe87023' }
+              - column: { name: amount, valueNumeric: 168.6 }
+              - column: { name: status, value: SUCCEEDED }

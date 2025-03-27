@@ -9,7 +9,7 @@ package com.aston.paymentbillingservice.entity;
  */
 public enum PaymentStatus {
 
-    PENDING, // В ожидании
-    SUCCEEDED, // Успешно завершен
-    FAILED // Неудача
+    PENDING,
+    SUCCEEDED,
+    FAILED
 }

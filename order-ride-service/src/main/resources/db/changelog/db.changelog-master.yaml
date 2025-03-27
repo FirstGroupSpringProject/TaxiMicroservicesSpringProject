@@ -1,0 +1,288 @@
+databaseChangeLog:
+  - command: --clear-checksums update
+  - changeSet:
+      id: setup_fdw
+      author: Team
+      changes:
+        - sql:
+            sql: |
+              CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+
+              DROP SERVER IF EXISTS user_driver_server CASCADE;
+              CREATE SERVER user_driver_server
+              FOREIGN DATA WRAPPER postgres_fdw
+              OPTIONS (host 'postgres-uds', dbname 'user_driver_db', port '5432');
+
+              CREATE USER MAPPING FOR CURRENT_USER
+              SERVER user_driver_server
+              OPTIONS (user 'root', password 'root');
+
+              CREATE SCHEMA IF NOT EXISTS user_driver_schema;
+
+              IMPORT FOREIGN SCHEMA public
+              FROM SERVER user_driver_server
+              INTO user_driver_schema;
+  - changeSet:
+      id: create_driver_cache_table
+      author: Team
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE IF NOT EXISTS driver_cache (
+                id UUID NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                orders_completed INTEGER,
+                current_status VARCHAR(20),
+                active BOOLEAN DEFAULT TRUE NOT NULL,
+                CONSTRAINT driver_cache_pkey PRIMARY KEY (id)
+              )
+
+  - changeSet:
+      id: 1
+      author: Team
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+  - changeSet:
+      id: 2
+      author: Team
+      changes:
+        - sql:
+            sql: |
+              DROP TABLE IF EXISTS user_ride_history CASCADE;
+              DROP TABLE IF EXISTS rides CASCADE;
+              DROP TABLE IF EXISTS orders CASCADE;
+
+  - changeSet:
+      id: 3
+      author: Team
+      changes:
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payment_id
+                  type: uuid
+                  constraints:
+                    nullable: true
+              - column:
+                  name: driver_id
+                  type: uuid
+                  constraints:
+                    nullable: true
+              - column:
+                  name: pickup_address
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+                    check: "status IN ('IN_PROGRESS', 'COMPLETED')"
+
+  - changeSet:
+      id: 4
+      author: Team
+      changes:
+        - createTable:
+            tableName: rides
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_ride_order
+                    references: orders(id)
+              - column:
+                  name: driver_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pickup_address
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: drop_address
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: distance
+                  type: numeric(10,2)
+                  constraints:
+                    nullable: false
+
+
+
+
+  - changeSet:
+      id: 5
+      author: Team
+      changes:
+        - createTable:
+            tableName: user_ride_history
+            columns:
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ride_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_user_ride_history_ride
+                    references: rides(id)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+            constraints:
+              primaryKey:
+                columnNames: user_id, ride_id
+                constraintName: pk_user_ride_history
+        - createIndex:
+            indexName: idx_user_ride_history_user_id
+            tableName: user_ride_history
+            columns:
+              - column:
+                  name: user_id
+
+  - changeSet:
+      id: 7
+      author: Team
+      changes:
+        - sql:
+            sql: ALTER TABLE orders ALTER COLUMN driver_id DROP NOT NULL
+
+  - changeSet:
+      id: 8
+      author: Team
+      changes:
+        - insert:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  value: "b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c"
+              - column:
+                  name: user_id
+                  value: "b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c"
+              - column:
+                  name: pickup_address
+                  value: "123 Main St, City"
+              - column:
+                  name: status
+                  value: "IN_PROGRESS"
+        - insert:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  value: "65f08c74-2703-4dd9-919e-04164fe87023"
+              - column:
+                  name: user_id
+                  value: "65f08c74-2703-4dd9-919e-04164fe87023"
+              - column:
+                  name: pickup_address
+                  value: "456 Oak Ave, Town"
+              - column:
+                  name: status
+                  value: "COMPLETED"
+
+  - changeSet:
+      id: 9
+      author: Team
+      changes:
+        - insert:
+            tableName: rides
+            columns:
+              - column:
+                  name: id
+                  value: "11111111-3cc2-4c32-95a4-3e1c1e01dd0c"
+              - column:
+                  name: order_id
+                  value: "b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c"
+              - column:
+                  name: driver_id
+                  value: "33333333-3cc2-4c32-95a4-3e1c1e01dd0c"
+              - column:
+                  name: pickup_address
+                  value: "123 Main St, City"
+              - column:
+                  name: drop_address
+                  value: "789 Pine Rd, Village"
+              - column:
+                  name: distance
+                  valueNumeric: 5.5
+        - insert:
+            tableName: rides
+            columns:
+              - column:
+                  name: id
+                  value: "22222222-2703-4dd9-919e-04164fe87023"
+              - column:
+                  name: order_id
+                  value: "65f08c74-2703-4dd9-919e-04164fe87023"
+              - column:
+                  name: driver_id
+                  value: "44444444-2703-4dd9-919e-04164fe87023"
+              - column:
+                  name: pickup_address
+                  value: "456 Oak Ave, Town"
+              - column:
+                  name: drop_address
+                  value: "321 Elm Blvd, Hamlet"
+              - column:
+                  name: distance
+                  valueNumeric: 3.2
+
+  - changeSet:
+      id: 10
+      author: Team
+      changes:
+        - insert:
+            tableName: user_ride_history
+            columns:
+              - column:
+                  name: user_id
+                  value: "b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c"
+              - column:
+                  name: ride_id
+                  value: "11111111-3cc2-4c32-95a4-3e1c1e01dd0c"
+        - insert:
+            tableName: user_ride_history
+            columns:
+              - column:
+                  name: user_id
+                  value: "65f08c74-2703-4dd9-919e-04164fe87023"
+              - column:
+                  name: ride_id
+                  value: "22222222-2703-4dd9-919e-04164fe87023"

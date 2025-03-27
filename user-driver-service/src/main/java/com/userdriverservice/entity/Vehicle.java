@@ -18,7 +18,7 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "driver_id", nullable = false) // связь с Driver
+    @Column(name = "driver_id", nullable = false)
     private UUID driverId;
 
     @Column(name = "model", nullable = false)

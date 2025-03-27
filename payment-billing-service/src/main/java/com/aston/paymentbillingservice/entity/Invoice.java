@@ -21,12 +21,12 @@ import java.util.UUID;
 public class Invoice extends BaseEntity {
 
     @Column(name = "user_id", nullable = false)
-    private UUID userId; // Идентификатор пользователя
+    private UUID userId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
-    private PaymentMethod paymentMethod; // Метод оплаты
+    private PaymentMethod paymentMethod;
 
     @Column(name = "due_date", nullable = false)
-    private LocalDateTime dueDate; // Срок оплаты
+    private LocalDateTime dueDate;
 }

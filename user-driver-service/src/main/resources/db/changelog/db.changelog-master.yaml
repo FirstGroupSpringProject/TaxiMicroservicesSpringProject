@@ -1,0 +1,216 @@
+databaseChangeLog:
+  - changeSet:
+      id: 16
+      author: Team
+      changes:
+        - sql:
+            sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
+
+  - changeSet:
+      id: 17
+      author: Team
+      changes:
+        - sql:
+            sql: DROP TYPE IF EXISTS driver_status_enum;
+
+  - changeSet:
+      id: 19
+      author: Team
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: age
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: 20
+      author: Team
+      changes:
+        - createTable:
+            tableName: drivers
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: orders_completed
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: current_status
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 21
+      author: Team
+      changes:
+        - createTable:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: uuid_generate_v4()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: driver_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: model
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: number
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: 22
+      author: Team
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  value: "John Doe"
+              - column:
+                  name: age
+                  valueNumeric: 30
+              - column:
+                  name: phone
+                  value: "+1234567890"
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  value: "Jane Smith"
+              - column:
+                  name: age
+                  valueNumeric: 25
+              - column:
+                  name: phone
+                  value: "+0987654321"
+
+  - changeSet:
+      id: 23
+      author: Team
+      changes:
+        - insert:
+            tableName: drivers
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  value: "Driver One"
+              - column:
+                  name: orders_completed
+                  valueNumeric: 10
+              - column:
+                  name: current_status
+                  value: 2
+        - insert:
+            tableName: drivers
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: name
+                  value: "Driver Two"
+              - column:
+                  name: orders_completed
+                  valueNumeric: 5
+              - column:
+                  name: current_status
+                  value: 1
+
+  - changeSet:
+      id: 24
+      author: Team
+      changes:
+        - insert:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: driver_id
+                  value: "b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c"
+              - column:
+                  name: model
+                  value: "Toyota Corolla"
+              - column:
+                  name: number
+                  value: "ABC123"
+        - insert:
+            tableName: vehicles
+            columns:
+              - column:
+                  name: id
+                  valueComputed: uuid_generate_v4()
+              - column:
+                  name: driver_id
+                  value: "65f08c74-2703-4dd9-919e-04164fe87023"
+              - column:
+                  name: model
+                  value: "Honda Civic"
+              - column:
+                  name: number
+                  value: "XYZ789"

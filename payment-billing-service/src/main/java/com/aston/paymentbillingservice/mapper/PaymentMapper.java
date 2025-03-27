@@ -11,19 +11,11 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class PaymentMapper implements Mapper<Payment, PaymentDto> {
-
-    /**
-     * Преобразует объект типа Payment в объект типа PaymentDto.
-     *
-     * @param payment - объект Payment, который необходимо преобразовать
-     * @return преобразованный объект PaymentDto
-     */
     @Override
     public PaymentDto toDto(Payment payment) {
-        return new PaymentDto(payment.getId(),
+        return new PaymentDto(payment.getId(), payment.getOrderId(), payment.getUserId(),
                 payment.getAmount(), payment.getStatus());
     }
-
     /**
      * Преобразует объект типа PaymentDto в объект типа Payment.
      *
@@ -34,6 +26,8 @@ public class PaymentMapper implements Mapper<Payment, PaymentDto> {
     public Payment toEntity(PaymentDto paymentDto) {
         Payment payment = new Payment();
         payment.setId(paymentDto.getId());
+        payment.setOrderId(paymentDto.getOrderId());
+        payment.setUserId(paymentDto.getUserId());
         payment.setAmount(paymentDto.getAmount());
         payment.setStatus(paymentDto.getStatus());
         return payment;

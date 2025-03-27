@@ -1,23 +1,35 @@
-version: '3.8'
 
 services:
-  app-uds: # user-driver-service
-    build: user-driver-service/.  # Собираем образ из Dockerfile
+
+
+  app-uds:
+    build:
+
+      context: .
+      dockerfile: user-driver-service/Dockerfile
     container_name: user-driver-service-app
     ports:
       - "8081:8081"
     environment:
+
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-uds:5432/user_driver_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      #SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-master.yaml
+      SPRING_LIQUIBASE_ENABLED: false
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
       postgres-uds:
         condition: service_healthy
+      liquibase-uds:
+        condition: service_completed_successfully
     networks:
       - my-network
 
-  app-ors: # order-ride-service
-    build: order-ride-service/.  # Собираем образ из Dockerfile
+  app-ors:
+    build:
+      context: .
+      dockerfile: order-ride-service/Dockerfile
     container_name: order-ride-service-app
     ports:
       - "8082:8082"
@@ -25,14 +37,21 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-ors:5432/order_ride_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-master.yaml
+      SPRING_LIQUIBASE_ENABLED: false
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
       postgres-ors:
         condition: service_healthy
+      liquibase-ors:
+        condition: service_completed_successfully
     networks:
       - my-network
 
-  app-pbs: # payment-billing-service
-    build: payment-billing-service/.  # Собираем образ из Dockerfile
+  app-pbs:
+    build:
+      context: .
+      dockerfile: payment-billing-service/Dockerfile
     container_name: payment-billing-service-app
     ports:
       - "8083:8083"
@@ -40,6 +59,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-pbs:5432/payment_billing_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      SPRING_LIQUIBASE_CHANGE_LOG: classpath:db/changelog/db.changelog-master.yaml
+      SPRING_LIQUIBASE_ENABLED: false
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     depends_on:
       postgres-pbs:
         condition: service_healthy
@@ -100,6 +122,89 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - my-network
+
+  liquibase-pbs:
+    image: liquibase/liquibase:4.30.0
+    depends_on:
+      postgres-pbs:
+        condition: service_healthy
+    volumes:
+      - ./payment-billing-service/src/main/resources/db/changelog:/liquibase/changelog
+    working_dir: /liquibase/changelog
+    command:
+      - --changeLogFile=db.changelog-master.yaml
+      - --url=jdbc:postgresql://postgres-pbs:5432/payment_billing_db
+      - --username=root
+      - --password=root
+      - update
+    networks:
+      - my-network
+
+
+  liquibase-uds:
+    image: liquibase/liquibase:4.30.0
+    depends_on:
+      postgres-uds:
+        condition: service_healthy
+    volumes:
+      - ./user-driver-service/src/main/resources/db/changelog:/liquibase/changelog
+    working_dir: /liquibase/changelog
+    command:
+      - --changeLogFile=db.changelog-master.yaml
+      - --url=jdbc:postgresql://postgres-uds:5432/user_driver_db
+      - --username=root
+      - --password=root
+      - update
+    networks:
+      - my-network
+  liquibase-ors:
+    image: liquibase/liquibase:4.30.0
+    depends_on:
+      postgres-ors:
+        condition: service_healthy
+    volumes:
+      - ./order-ride-service/src/main/resources/db/changelog:/liquibase/changelog
+    working_dir: /liquibase/changelog
+    command:
+      - --changeLogFile=db.changelog-master.yaml
+      - --url=jdbc:postgresql://postgres-ors:5432/order_ride_db
+      - --username=root
+      - --password=root
+      - update
+    networks:
+      - my-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - my-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT:
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka:29092,LISTENER_EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka:29092,LISTENER_EXTERNAL://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 100
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
     networks:
       - my-network
 

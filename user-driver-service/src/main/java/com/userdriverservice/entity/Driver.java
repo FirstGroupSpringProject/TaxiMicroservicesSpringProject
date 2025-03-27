@@ -13,7 +13,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "drivers")
 public class Driver {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -25,6 +24,5 @@ public class Driver {
     private Integer ordersCompleted;
 
     @Column(name = "current_status", nullable = false)
-    private DriverStatus currentStatus;
-
+    private String currentStatus;
 }
