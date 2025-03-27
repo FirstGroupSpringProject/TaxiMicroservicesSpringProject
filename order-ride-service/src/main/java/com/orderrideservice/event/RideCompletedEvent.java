@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Событие завершения поездки.
+ * Содержит информацию о поездке, заказе, водителе, пользователе и сумме платежа.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

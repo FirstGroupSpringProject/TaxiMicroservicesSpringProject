@@ -4,6 +4,10 @@ import lombok.Data;
 
 import java.util.UUID;
 
+/**
+ * DTO для представления данных поездки.
+ * Содержит основную информацию о поездке.
+ */
 @Data
 public class RideDto {
 

@@ -9,37 +9,38 @@ import com.orderrideservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional; // Важно для update/delete
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис для работы с заказами.
+ * Предоставляет CRUD-операции и бизнес-логику для управления заказами.
+ */
 @Service
 @RequiredArgsConstructor
-@Slf4j // Используем Slf4j для логирования
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
-    private final DriverCacheRepository driverCacheRepository; // Для проверки доступности
+    private final DriverCacheRepository driverCacheRepository;
 
-    @Transactional // Важно для создания
+    /**
+     * Создает новый заказ.
+     *
+     * @param orderDto DTO с данными заказа
+     * @return созданный OrderDto
+     */
+    @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
         log.info("Attempting to create order for user: {}", orderDto.getUserId());
-        // TODO: Добавить логику проверки доступности водителя из driverCacheRepository
-        // Пример:
-        // boolean driverAvailable = driverCacheRepository.findById(orderDto.getDriverId())
-        //                                             .map(cache -> "AVAILABLE".equals(cache.getCurrentStatus()) && cache.isActive())
-        //                                             .orElse(false);
-        // if (!driverAvailable) {
-        //    log.warn("Driver {} is not available or not found", orderDto.getDriverId());
-        //    throw new RuntimeException("Driver not available"); // Или более специфичное исключение
-        // }
 
         Order order = orderMapper.toEntity(orderDto);
-        // Убедимся, что статус по умолчанию правильный, если не передан
+
         if (order.getStatus() == null) {
             order.setStatus(com.orderrideservice.entity.OrderStatus.IN_PROGRESS);
         }
@@ -48,13 +49,24 @@ public class OrderService {
         return orderMapper.toDto(savedOrder);
     }
 
-    @Transactional(readOnly = true) // Только чтение
+    /**
+     * Получает заказ по идентификатору.
+     *
+     * @param id UUID заказа
+     * @return Optional с OrderDto, если заказ найден
+     */
+    @Transactional(readOnly = true)
     public Optional<OrderDto> getOrderById(UUID id) {
         log.debug("Finding order by id: {}", id);
         return orderRepository.findById(id).map(orderMapper::toDto);
     }
 
-    @Transactional(readOnly = true) // Только чтение
+    /**
+     * Получает список всех заказов.
+     *
+     * @return список OrderDto
+     */
+    @Transactional(readOnly = true)
     public List<OrderDto> getAllOrders() {
         log.debug("Finding all orders");
         return orderRepository.findAll().stream()
@@ -62,22 +74,34 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional // Важно для обновления
+    /**
+     * Обновляет существующий заказ.
+     *
+     * @param id UUID заказа
+     * @param orderDto DTO с новыми данными заказа
+     * @return обновленный OrderDto
+     * @throws OrderNotFoundException если заказ не найден
+     */
+    @Transactional
     public OrderDto updateOrder(UUID id, OrderDto orderDto) {
         log.info("Attempting to update order with id: {}", id);
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
-        // Обновляем поля из DTO в существующую сущность
         orderMapper.updateOrder(orderDto, existingOrder);
 
-        // Пересохраняем обновленную сущность
         Order updatedOrder = orderRepository.save(existingOrder);
         log.info("Order updated successfully: {}", updatedOrder.getId());
         return orderMapper.toDto(updatedOrder);
     }
 
-    @Transactional // Важно для удаления
+    /**
+     * Удаляет заказ по идентификатору.
+     *
+     * @param id UUID заказа
+     * @throws OrderNotFoundException если заказ не найден
+     */
+    @Transactional
     public void deleteOrder(UUID id) {
         log.info("Attempting to delete order with id: {}", id);
         if (!orderRepository.existsById(id)) {

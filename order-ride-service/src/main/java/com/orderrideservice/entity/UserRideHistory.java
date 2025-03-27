@@ -9,6 +9,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Сущность истории поездок пользователя.
+ * Фиксирует факт выполнения поездки пользователем.
+ */
 @Entity
 @Table(name = "user_ride_history")
 @Data
@@ -24,6 +28,12 @@ public class UserRideHistory {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /**
+     * Создает новую запись в истории поездок.
+     *
+     * @param userId идентификатор пользователя
+     * @param rideId идентификатор поездки
+     */
     public UserRideHistory(UUID userId, UUID rideId) {
         this.id = new UserRideHistoryId(userId, rideId);
     }

@@ -13,14 +13,22 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Контроллер для управления пользователями.
+ * Предоставляет REST API для операций CRUD с пользователями.
+ */
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
-
     private final UserService userService;
     private static final Logger LOG = LoggerFactory.getLogger(UserController.class);
-
+    /**
+     * Создает нового пользователя.
+     *
+     * @param userDto DTO с данными пользователя
+     * @return ResponseEntity с созданным UserDto и статусом 201 (Created)
+     */
     @PostMapping
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
         LOG.info("Creating user: {}", userDto);
@@ -28,7 +36,13 @@ public class UserController {
         LOG.info("User created: {}", createdUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
-
+    /**
+     * Получает пользователя по идентификатору.
+     *
+     * @param id UUID пользователя
+     * @return ResponseEntity с UserDto и статусом 200 (OK), если найден,
+     *         или статусом 404 (Not Found), если не найден
+     */
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
         LOG.info("Getting user by id: {}", id);
@@ -42,7 +56,12 @@ public class UserController {
                     return ResponseEntity.notFound().build();
                 });
     }
-
+    /**
+     * Получает список всех пользователей.
+     *
+     * @return ResponseEntity со списком UserDto и статусом 200 (OK),
+     *         или статусом 204 (No Content), если пользователи не найдены
+     */
     @GetMapping
     public ResponseEntity<List<UserDto>> getUsers() {
         LOG.info("Getting all users");
@@ -54,7 +73,15 @@ public class UserController {
         LOG.info("Found {} users", userDtoList.size());
         return ResponseEntity.ok(userDtoList);
     }
-
+    /**
+     * Обновляет данные пользователя.
+     *
+     * @param id UUID пользователя
+     * @param userDto DTO с обновленными данными
+     * @return ResponseEntity с обновленным UserDto и статусом 200 (OK),
+     *         или статусом 404 (Not Found), если пользователь не найден,
+     *         или статусом 500 (Internal Server Error) при ошибке
+     */
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> updateUser(@PathVariable UUID id, @RequestBody UserDto userDto) {
         LOG.info("Updating user with id: {}, data: {}", id, userDto);
@@ -71,6 +98,14 @@ public class UserController {
         }
     }
 
+    /**
+     * Удаляет пользователя.
+     *
+     * @param id UUID пользователя
+     * @return ResponseEntity со статусом 204 (No Content) при успешном удалении,
+     *         или статусом 404 (Not Found), если пользователь не найден,
+     *         или статусом 500 (Internal Server Error) при ошибке
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         LOG.info("Deleting user with id: {}", id);

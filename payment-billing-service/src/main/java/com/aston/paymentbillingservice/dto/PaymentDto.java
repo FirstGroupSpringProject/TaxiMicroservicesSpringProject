@@ -19,13 +19,12 @@ import java.util.UUID;
 @ToString
 public class PaymentDto {
 
-    private UUID id; // Идентификатор
-    private UUID orderId; // Идентификатор заказа
-    private UUID userId; // Идентификатор пользователя
-    private BigDecimal amount; // Сумма платежа
-    private PaymentStatus status; // Статус платежа
+    private UUID id;
+    private UUID orderId;
+    private UUID userId;
+    private BigDecimal amount;
+    private PaymentStatus status;
 
-    // equals и hashCode нужно обновить, если используешь их
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -11,13 +11,23 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+/**
+ * Kafka Consumer для обработки событий завершения поездок.
+ * Обновляет статистику водителей при завершении поездок.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class RideEventConsumer {
-
     private final DriverRepository driverRepository;
 
+    /**
+     * Обрабатывает событие завершения поездки.
+     * Увеличивает счетчик завершенных заказов у водителя.
+     *
+     * @param event событие завершения поездки
+     */
     @KafkaListener(topics = "${spring.kafka.topics.ride-events:ride-events}", groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
     public void handleRideCompleted(RideCompletedEvent event) {

@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.UUID;
 
+/**
+ * Составной идентификатор для истории поездок пользователя.
+ * Содержит пару user_id и ride_id как первичный ключ.
+ */
 @Embeddable
 @Data
 @NoArgsConstructor

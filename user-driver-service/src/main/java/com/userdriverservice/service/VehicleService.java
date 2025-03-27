@@ -17,6 +17,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис для работы с транспортными средствами.
+ * Предоставляет CRUD-операции и бизнес-логику для управления транспортными средствами.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -28,6 +32,12 @@ public class VehicleService {
 
     private static final String VEHICLE_EVENTS_TOPIC = "vehicle-events";
 
+    /**
+     * Создает новое транспортное средство.
+     *
+     * @param vehicleDto DTO с данными транспортного средства
+     * @return созданный VehicleDto
+     */
     @Transactional
     public VehicleDto createVehicle(VehicleDto vehicleDto) {
         log.info("Creating vehicle with number: {}", vehicleDto.getNumber());
@@ -39,13 +49,25 @@ public class VehicleService {
         sendVehicleEvent(savedDto, "CREATED");
         return savedDto;
     }
-
+    /**
+     * Получает транспортное средство по идентификатору.
+     *
+     * @param id UUID транспортного средства
+     * @return Optional с VehicleDto, если транспортное средство найдено
+     */
     @Transactional(readOnly = true)
     public Optional<VehicleDto> getVehicleById(UUID id) {
         log.debug("Fetching vehicle by ID: {}", id);
         return vehicleRepository.findById(id).map(vehicleMapper::toDto);
     }
-
+    /**
+     * Обновляет данные транспортного средства.
+     *
+     * @param id UUID транспортного средства
+     * @param vehicleDto DTO с обновленными данными
+     * @return обновленный VehicleDto
+     * @throws VehicleNotFoundException если транспортное средство не найдено
+     */
     @Transactional
     public VehicleDto updateVehicle(UUID id, VehicleDto vehicleDto) {
         log.info("Updating vehicle with ID: {}", id);
@@ -60,7 +82,12 @@ public class VehicleService {
         sendVehicleEvent(updatedDto, "UPDATED");
         return updatedDto;
     }
-
+    /**
+     * Удаляет транспортное средство.
+     *
+     * @param id UUID транспортного средства
+     * @throws VehicleNotFoundException если транспортное средство не найдено
+     */
     @Transactional
     public void deleteVehicle(UUID id) {
         log.info("Deleting vehicle with ID: {}", id);
@@ -72,7 +99,11 @@ public class VehicleService {
 
         sendVehicleEvent(vehicleMapper.toDto(vehicleToDelete), "DELETED");
     }
-
+    /**
+     * Получает список всех транспортных средств.
+     *
+     * @return список VehicleDto
+     */
     @Transactional(readOnly = true)
     public List<VehicleDto> getAllVehicles() {
         log.debug("Fetching all vehicles");
@@ -80,7 +111,12 @@ public class VehicleService {
                 .map(vehicleMapper::toDto)
                 .collect(Collectors.toList());
     }
-
+    /**
+     * Отправляет событие о транспортном средстве в Kafka.
+     *
+     * @param vehicleDto DTO транспортного средства
+     * @param eventType тип события ("CREATED", "UPDATED", "DELETED")
+     */
     private void sendVehicleEvent(VehicleDto vehicleDto, String eventType) {
         try {
             Map<String, Object> eventData = Map.of(

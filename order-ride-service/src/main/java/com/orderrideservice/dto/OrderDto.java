@@ -5,6 +5,10 @@ import com.orderrideservice.entity.OrderStatus;
 
 import java.util.UUID;
 
+/**
+ * DTO для представления данных заказа.
+ * Используется для передачи информации о заказе между слоями приложения.
+ */
 @Data
 public class OrderDto {
     private UUID id;
