@@ -10,9 +10,4 @@ public class OrderRideServiceApplication {
         SpringApplication.run(OrderRideServiceApplication.class, args);
     }
 
-
-
-
-
-    //TestA
 }

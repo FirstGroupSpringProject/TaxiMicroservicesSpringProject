@@ -103,55 +103,6 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
-  - changeSet:
-      id: 10
-      author: Team
-      changes:
-        - insert:
-            tableName: payments
-            columns:
-              - column:
-                  name: amount
-                  valueNumeric: 350.6
-              - column:
-                  name: status
-                  value: PENDING
-        - insert:
-            tableName: payments
-            columns:
-              - column:
-                  name: amount
-                  valueNumeric: 168.6
-              - column:
-                  name: status
-                  value: SUCCEEDED
-        - insert:
-            tableName: payments
-            columns:
-              - column:
-                  name: amount
-                  valueNumeric: 564.35
-              - column:
-                  name: status
-                  value: FAILED
-        - insert:
-            tableName: payments
-            columns:
-              - column:
-                  name: amount
-                  valueNumeric: 88.34
-              - column:
-                  name: status
-                  value: PENDING
-        - insert:
-            tableName: payments
-            columns:
-              - column:
-                  name: amount
-                  valueNumeric: 1234.16
-              - column:
-                  name: status
-                  value: SUCCEEDED
 
   - changeSet:
       id: 11
@@ -217,3 +168,104 @@ databaseChangeLog:
               - column:
                   name: due_date
                   value: 2024-12-19T20:36:18.902052200
+  - changeSet:
+      id: 12-step1-add-nullable-columns
+      author: Team
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: payments
+                columnName: order_id
+      changes:
+        - addColumn:
+            tableName: payments
+            columns:
+              - column:
+                  name: order_id
+                  type: uuid
+                  constraints:
+                    nullable: true
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: true
+  - changeSet:
+      id: 12-step2-update-existing-rows
+      author: Team
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: payments
+                columnName: order_id
+      changes:
+        - update:
+            tableName: payments
+            columns:
+              - column:
+                  name: order_id
+                  value: '00000000-0000-0000-0000-000000000000' # Заглушка
+              - column:
+                  name: user_id
+                  value: '00000000-0000-0000-0000-000000000000'
+  - changeSet:
+      id: 12-step3-set-not-null
+      author: Team
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: payments
+                columnName: order_id
+      changes:
+        - addNotNullConstraint:
+            tableName: payments
+            columnName: order_id
+            columnDataType: uuid
+        - addNotNullConstraint:
+            tableName: payments
+            columnName: user_id
+            columnDataType: uuid
+
+  - changeSet:
+      id: 13
+      author: Team
+      preConditions:
+        - onFail: HALT
+        - columnExists:
+            tableName: payments
+            columnName: order_id
+        - columnExists:
+            tableName: payments
+            columnName: user_id
+      changes:
+        - addUniqueConstraint:
+            tableName: payments
+            columnNames: order_id
+            constraintName: uc_payments_order_id
+        - createIndex:
+            tableName: payments
+            indexName: idx_payments_user_id
+            columns:
+              - column:
+                  name: user_id
+  - changeSet:
+      id: 14
+      author: Team
+      changes:
+        - insert:
+            tableName: payments
+            columns:
+              - column: { name: order_id, value: 'b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c' }
+              - column: { name: user_id, value: 'b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c' }
+              - column: { name: amount, valueNumeric: 350.6 }
+              - column: { name: status, value: PENDING }
+        - insert:
+            tableName: payments
+            columns:
+              - column: { name: order_id, value: '65f08c74-2703-4dd9-919e-04164fe87023' }
+              - column: { name: user_id, value: '65f08c74-2703-4dd9-919e-04164fe87023' }
+              - column: { name: amount, valueNumeric: 168.6 }
+              - column: { name: status, value: SUCCEEDED }

@@ -8,6 +8,7 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface DriverMapper {
+
     DriverDto toDto(Driver driver);
 
     @Mapping(target = "id", ignore = true)

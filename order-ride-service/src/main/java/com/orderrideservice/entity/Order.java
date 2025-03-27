@@ -13,7 +13,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @Table(name = "orders")
 public class Order {
+    @Column(name = "payment_id", nullable = true)
+    private UUID paymentId;
 
+    @Column(name = "driver_id", nullable = true)
+    private UUID driverId;
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

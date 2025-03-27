@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>com.example</groupId>
     <artifactId>SpringProject</artifactId>
@@ -15,10 +15,12 @@
     <description>SpringProject</description>
 
     <packaging>pom</packaging>
+
     <modules>
         <module>order-ride-service</module>
         <module>user-driver-service</module>
         <module>payment-billing-service</module>
+        <module>common-events</module>
     </modules>
     <url/>
     <licenses>
@@ -70,7 +72,7 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <version>4.29.2</version> <!-- Используйте последнюю версию -->
+            <version>4.29.2</version>
         </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>

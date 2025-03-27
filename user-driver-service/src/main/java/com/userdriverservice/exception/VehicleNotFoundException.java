@@ -1,4 +1,9 @@
 package com.userdriverservice.exception;
 
-public class VehicleNotFoundException {
+import java.util.UUID;
+
+public class VehicleNotFoundException extends RuntimeException {
+    public VehicleNotFoundException(UUID id) {
+        super("Vehicle not found with id: " + id);
+    }
 }

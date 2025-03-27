@@ -1,4 +1,13 @@
 package com.aston.commonevents.dto;
 
-public class DriverEven {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class DriverEvent {
+    private String eventType;
+    private DriverEventPayload payload;
 }

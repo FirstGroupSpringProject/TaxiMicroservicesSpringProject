@@ -16,6 +16,11 @@ databaseChangeLog:
   - changeSet:
       id: 19
       author: Team
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - tableExists:
+                tableName
       changes:
         - createTable:
             tableName: users

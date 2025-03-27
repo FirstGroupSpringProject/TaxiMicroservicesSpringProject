@@ -74,7 +74,7 @@ public class InvoiceController {
      * Удаляет счёт по заданному идентификатору.
      *
      * @param invoiceId - идентификатор счёта, который нужно удалить
-     * @return объект InvoiceDto с информацией о удаленном счёте
+     * @return объект InvoiceDto с информацией об удаленном счёте
      * @throws NotFoundException если счёт с указанным идентификатором не найден
      */
     @DeleteMapping("/invoices/{invoiceId}")
@@ -88,14 +88,11 @@ public class InvoiceController {
      *
      * @param invoiceId  - идентификатор счёта, который нужно обновить
      * @param invoiceDto - объект InvoiceDto с новыми данными
-     * @param userId     - идентификатор пользователя
      * @return обновленный объект InvoiceDto
      * @throws BadRequestException если обновление не удалось
      */
-    @PutMapping("/invoices/{invoiceId}/{userId}")
-    public InvoiceDto updateInvoice(@PathVariable UUID invoiceId, @RequestBody InvoiceDto invoiceDto,
-                                    @PathVariable UUID userId) {
-        invoiceDto.setUserId(userId);
+    @PutMapping("/invoices/{invoiceId}")
+    public InvoiceDto updateInvoice(@PathVariable UUID invoiceId, @RequestBody InvoiceDto invoiceDto) {
         invoiceDto.setDueDate(LocalDateTime.now());
         return invoiceService.update(invoiceId, invoiceDto)
                 .orElseThrow(() -> new BadRequestException(invoiceId));

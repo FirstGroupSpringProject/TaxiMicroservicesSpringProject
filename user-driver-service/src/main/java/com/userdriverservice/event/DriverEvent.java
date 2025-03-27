@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DriverEvent {
     private UUID driverId;
-    private String eventType; // "CREATED", "UPDATED", "DELETED"
+    private String eventType;
     private DriverDto driverData;
 
 

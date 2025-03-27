@@ -1,16 +1,24 @@
 package com.aston.paymentbillingservice.service;
 
+import ch.qos.logback.classic.Logger;
 import com.aston.paymentbillingservice.dto.PaymentDto;
 import com.aston.paymentbillingservice.entity.Payment;
+import com.aston.paymentbillingservice.entity.PaymentStatus;
+import com.aston.commonevents.dto.DriverEvent; // Импорт из общего модуля
+import com.aston.commonevents.dto.DriverEventPayload; // Импорт из общего модуля
+import com.aston.paymentbillingservice.event.PaymentStatusUpdatedEvent;
 import com.aston.paymentbillingservice.mapper.Mapper;
 import com.aston.paymentbillingservice.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Сервис PaymentService для управления платежами.
@@ -20,6 +28,9 @@ import java.util.UUID;
 @Service
 public class PaymentService implements ServiceInterface<PaymentDto> {
 
+    @Autowired
+    private KafkaTemplate<String, PaymentStatusUpdatedEvent> paymentEventKafkaTemplate;
+    private static final String PAYMENT_EVENTS_TOPIC = "payment-events";
     private final Mapper<Payment, PaymentDto> paymentMapper;
     private final PaymentRepository paymentRepository;
 
@@ -41,13 +52,13 @@ public class PaymentService implements ServiceInterface<PaymentDto> {
      * @return список всех PaymentDto
      */
     @Override
+    @Transactional(readOnly = true)
     public List<PaymentDto> findAll() {
-        List<Payment> payments = paymentRepository.findAll();
-        List<PaymentDto> paymentsDto = new ArrayList<>();
-        for (Payment payment : payments) {
-            paymentsDto.add(paymentMapper.toDto(payment));
-        }
-        return paymentsDto;
+        Logger log = null;
+        log.debug("Finding all payments");
+        return paymentRepository.findAll().stream()
+                .map(paymentMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -57,9 +68,9 @@ public class PaymentService implements ServiceInterface<PaymentDto> {
      * @return объект Optional типа PaymentDto, если найден
      */
     @Override
+    @Transactional(readOnly = true)
     public Optional<PaymentDto> findById(UUID id) {
-        Optional<Payment> paymentById = paymentRepository.findById(id);
-        return paymentById.map(paymentMapper::toDto);
+        return paymentRepository.findById(id).map(paymentMapper::toDto);
     }
 
     /**
@@ -69,11 +80,14 @@ public class PaymentService implements ServiceInterface<PaymentDto> {
      * @return сохранённый объект Optional типа PaymentDto
      */
     @Override
-    public PaymentDto save(PaymentDto paymentDto) {
+    @Transactional
+    public PaymentDto save(PaymentDto paymentDto) {;
         Payment payment = paymentMapper.toEntity(paymentDto);
-        paymentRepository.save(payment);
-        return paymentMapper.toDto(payment);
+        payment.setStatus(PaymentStatus.PENDING);
+        Payment savedPayment = paymentRepository.save(payment);
+        return paymentMapper.toDto(savedPayment);
     }
+
 
     /**
      * Удаляет Payment по заданному идентификатору.
@@ -82,10 +96,18 @@ public class PaymentService implements ServiceInterface<PaymentDto> {
      * @return объект Optional типа PaymentDto, если удаление прошло успешно
      */
     @Override
+    @Transactional
     public Optional<PaymentDto> delete(UUID id) {
-        Optional<Payment> paymentById = paymentRepository.findById(id);
-        paymentRepository.deleteById(id);
-        return paymentById.map(paymentMapper::toDto);
+        Optional<Payment> paymentOpt = paymentRepository.findById(id);
+        if (paymentOpt.isPresent()) {
+            paymentRepository.deleteById(id);
+
+            // TODO: Отправлять ли PaymentDeletedEvent? (Обычно нет)
+            return paymentOpt.map(paymentMapper::toDto);
+        } else {
+;
+            return Optional.empty();
+        }
     }
 
     /**
@@ -96,13 +118,60 @@ public class PaymentService implements ServiceInterface<PaymentDto> {
      * @return объект Optional типа PaymentDto, если обновление прошло успешно
      */
     @Override
+    @Transactional
     public Optional<PaymentDto> update(UUID id, PaymentDto paymentDto) {
-        Optional<Payment> payment = paymentRepository.findById(id)
-                .map(p -> {
-                    p.setAmount(paymentDto.getAmount());
-                    p.setStatus(paymentDto.getStatus());
-                    return paymentRepository.save(p);
-                });
-        return payment.map(paymentMapper::toDto);
+
+        Optional<Payment> paymentOpt = paymentRepository.findById(id);
+        if (paymentOpt.isEmpty()) {
+
+            return Optional.empty();
+        }
+        Payment existingPayment = paymentOpt.get();
+        boolean statusChanged = existingPayment.getStatus() != paymentDto.getStatus();
+
+        existingPayment.setAmount(paymentDto.getAmount());
+        existingPayment.setStatus(paymentDto.getStatus());
+
+        Payment updatedPayment = paymentRepository.save(existingPayment);
+        PaymentDto updatedDto = paymentMapper.toDto(updatedPayment);
+
+        if (statusChanged) {
+            sendPaymentStatusEvent(updatedPayment);
+        }
+
+        return Optional.of(updatedDto);
+    }
+
+
+    public Optional<PaymentDto> updatePaymentStatus(UUID paymentId, PaymentStatus newStatus) {
+
+        Optional<Payment> paymentOpt = paymentRepository.findById(paymentId);
+        if (paymentOpt.isEmpty()) {
+
+            return Optional.empty();
+        }
+
+        Payment payment = paymentOpt.get();
+        if (payment.getStatus() == newStatus) {
+            return Optional.of(paymentMapper.toDto(payment));
+        }
+
+        payment.setStatus(newStatus);
+        Payment updatedPayment = paymentRepository.save(payment);
+
+        sendPaymentStatusEvent(updatedPayment);
+
+        return Optional.of(paymentMapper.toDto(updatedPayment));
+    }
+
+    private void sendPaymentStatusEvent(Payment payment) {
+        PaymentStatusUpdatedEvent event = new PaymentStatusUpdatedEvent(
+                payment.getId(),
+                payment.getOrderId(),
+                payment.getUserId(),
+                payment.getAmount(),
+                payment.getStatus().name()
+        );
+
     }
 }

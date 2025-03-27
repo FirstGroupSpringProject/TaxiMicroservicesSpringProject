@@ -6,18 +6,16 @@ import org.mapstruct.MappingTarget;
 import com.orderrideservice.dto.OrderDto;
 import com.orderrideservice.entity.Order;
 
-@Mapper(componentModel = "spring") // Интеграция с Spring
+@Mapper(componentModel = "spring")
 public interface OrderMapper {
-
-    // Маппинг Order -> OrderDto
     OrderDto toDto(Order order);
 
-    // Маппинг OrderDto -> Order (игнорируем id при создании)
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "paymentId", ignore = true)
     Order toEntity(OrderDto orderDto);
 
-    // Обновление существующей сущности из Dto
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "paymentId", ignore = true)
+    @Mapping(target = "userId", ignore = true)
     void updateOrder(OrderDto orderDto, @MappingTarget Order order);
-
 }

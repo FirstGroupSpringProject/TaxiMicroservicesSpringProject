@@ -36,14 +36,6 @@ databaseChangeLog:
                 active BOOLEAN DEFAULT TRUE NOT NULL,
                 CONSTRAINT driver_cache_pkey PRIMARY KEY (id)
               )
-  - changeSet:
-      id: modify_rides_table
-      author: Team
-      changes:
-        - sql:
-            sql: ALTER TABLE rides DROP CONSTRAINT IF EXISTS fk_ride_driver;
-        - sql:
-            sql: ALTER TABLE rides ALTER COLUMN driver_id TYPE uuid USING driver_id::uuid;
 
   - changeSet:
       id: 1
@@ -51,7 +43,6 @@ databaseChangeLog:
       changes:
         - sql:
             sql: CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
-
   - changeSet:
       id: 2
       author: Team
@@ -145,6 +136,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
+
+
+
   - changeSet:
       id: 5
       author: Team
@@ -174,9 +168,12 @@ databaseChangeLog:
               primaryKey:
                 columnNames: user_id, ride_id
                 constraintName: pk_user_ride_history
-
-
-
+        - createIndex:
+            indexName: idx_user_ride_history_user_id
+            tableName: user_ride_history
+            columns:
+              - column:
+                  name: user_id
 
   - changeSet:
       id: 7
@@ -235,7 +232,7 @@ databaseChangeLog:
                   value: "b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c"
               - column:
                   name: driver_id
-                  value: "33333333-3cc2-4c32-95a4-3e1c1e01dd0c"  # Добавлен driver_id
+                  value: "33333333-3cc2-4c32-95a4-3e1c1e01dd0c"
               - column:
                   name: pickup_address
                   value: "123 Main St, City"
@@ -256,7 +253,7 @@ databaseChangeLog:
                   value: "65f08c74-2703-4dd9-919e-04164fe87023"
               - column:
                   name: driver_id
-                  value: "44444444-2703-4dd9-919e-04164fe87023"  # Добавлен driver_id
+                  value: "44444444-2703-4dd9-919e-04164fe87023"
               - column:
                   name: pickup_address
                   value: "456 Oak Ave, Town"
@@ -279,7 +276,7 @@ databaseChangeLog:
                   value: "b8b20b96-3cc2-4c32-95a4-3e1c1e01dd0c"
               - column:
                   name: ride_id
-                  value: "11111111-3cc2-4c32-95a4-3e1c1e01dd0c"  # Совпадает с ride.id
+                  value: "11111111-3cc2-4c32-95a4-3e1c1e01dd0c"
         - insert:
             tableName: user_ride_history
             columns:

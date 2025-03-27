@@ -1,33 +1,24 @@
-# Базовый образ с Java 17 и Maven
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
-
-# Рабочая директория
 WORKDIR /app
 
-# Копируем исходники и настройки Maven
-COPY pom.xml .
-COPY src ./src
-#COPY target/user-driver-service.jar app.jar
-COPY src/main/resources/db/changelog /app/src/main/resources/db/changelog
+# --- Сборка common-events ---
+COPY common-events/pom.xml ./common-events/pom.xml
+COPY common-events/src ./common-events/src
+RUN mvn -f ./common-events/pom.xml clean install -DskipTests
 
+# --- Сборка user-driver-service ---
+# Используем правильное имя папки!
+COPY user-driver-service/pom.xml ./user-driver-service/pom.xml
+COPY user-driver-service/src ./user-driver-service/src
 
-# Собираем проект
-RUN mvn clean package -DskipTests
+RUN mvn -f ./user-driver-service/pom.xml clean package -DskipTests
 
-# Финальный образ
+# Стадия 2: Финальный образ
 FROM eclipse-temurin:17-jre-alpine
-
-# Рабочая директория
 WORKDIR /app
 
-# Копируем JAR-файл из стадии сборки
-COPY --from=build /app/target/*.jar app.jar
+# Копируем JAR из target папки user-driver-service
+COPY --from=build /app/user-driver-service/target/*.jar app.jar
 
-# Копируем файлы миграций Liquibase
-COPY --from=build /app/src/main/resources/db/changelog /app/db/changelog
-
-# Открываем порт
 EXPOSE 8081
-
-# Команда запуска
 ENTRYPOINT ["java", "-jar", "app.jar"]

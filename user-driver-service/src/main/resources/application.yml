@@ -10,7 +10,7 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.yaml
     enabled: true
     clear-checksums: true
-  datasource: # Подключение в БД
+  datasource:
     url: jdbc:postgresql://localhost:5432/user_driver_db
     username: root
     password: root
@@ -20,21 +20,24 @@ spring:
       maximum-pool-size: 10
   kafka:
     bootstrap-servers: kafka:9092
-    topics:
-      driver-events: driver-events
-      ride-events: ride-events
     consumer:
-      group-id: ${spring.application.name}-group
+      group-id: user-driver-consumers
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "*"
+        spring.json.trusted.packages: "com.orderrideservice.event,com.yourcompany.commonevents.dto,java.util,java.lang"
+        spring.json.use.type.headers: false
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topics:
+      driver-events: driver-events
+      ride-events: ride-events
+      payment-requests: payment-requests
+      payment-events: payment-events
 
-  jpa: # Настройки hibernate
+  jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -46,11 +49,11 @@ spring:
 # LOGGING
 logging:
   level:
-    root: info    # уровень для корневого логгера
-    com.userdriverservice.*: debug  # уровень для пользовательского логгера
-    liquibase: debug  # уровень для логгера Liquibase
+    root: info
+    com.userdriverservice.*: debug
+    liquibase: debug
   file:
-    path: logs/payment-billing-service/       # путь для файлов логов
+    path: logs/payment-billing-service/
   logback:
     rollingpolicy:
       max-file-size: 10MB

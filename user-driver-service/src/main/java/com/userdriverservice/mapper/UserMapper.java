@@ -6,7 +6,7 @@ import org.mapstruct.MappingTarget;
 import com.userdriverservice.dto.UserDto;
 import com.userdriverservice.entity.User;
 
-@Mapper(componentModel = "spring") // Интеграция с Spring
+@Mapper(componentModel = "spring")
 public interface UserMapper {
 
     // Маппинг User -> UserDto

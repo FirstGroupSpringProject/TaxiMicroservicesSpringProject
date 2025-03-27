@@ -1,57 +1,99 @@
 package com.userdriverservice.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.userdriverservice.dto.VehicleDto;
 import com.userdriverservice.entity.Vehicle;
+import com.userdriverservice.exception.VehicleNotFoundException;
 import com.userdriverservice.mapper.VehicleMapper;
 import com.userdriverservice.repository.VehicleRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final VehicleMapper vehicleMapper;
-    private static final Logger LOG = LoggerFactory.getLogger(VehicleService.class);
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Autowired
-    public VehicleService(VehicleRepository vehicleRepository, VehicleMapper vehicleMapper) {
-        this.vehicleRepository = vehicleRepository;
-        this.vehicleMapper = vehicleMapper;
-    }
+    private static final String VEHICLE_EVENTS_TOPIC = "vehicle-events";
 
+    @Transactional
     public VehicleDto createVehicle(VehicleDto vehicleDto) {
+        log.info("Creating vehicle with number: {}", vehicleDto.getNumber());
         Vehicle vehicle = vehicleMapper.toEntity(vehicleDto);
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
-        return vehicleMapper.toDto(savedVehicle);
+        log.info("Vehicle created with ID: {}", savedVehicle.getId());
+        VehicleDto savedDto = vehicleMapper.toDto(savedVehicle);
+
+        sendVehicleEvent(savedDto, "CREATED");
+        return savedDto;
     }
 
-    public VehicleDto getVehicleByNumber(String number) {
-        Vehicle vehicle = vehicleRepository.findVehicleByNumber(number);
-        return vehicleMapper.toDto(vehicle);
+    @Transactional(readOnly = true)
+    public Optional<VehicleDto> getVehicleById(UUID id) {
+        log.debug("Fetching vehicle by ID: {}", id);
+        return vehicleRepository.findById(id).map(vehicleMapper::toDto);
     }
 
+    @Transactional
     public VehicleDto updateVehicle(UUID id, VehicleDto vehicleDto) {
-        Vehicle vehicle = vehicleRepository.findById(id).orElseThrow();
-        vehicleMapper.updateVehicle(vehicleDto, vehicle);
-        Vehicle updatedVehicle = vehicleRepository.save(vehicle);
-        return vehicleMapper.toDto(updatedVehicle);
+        log.info("Updating vehicle with ID: {}", id);
+        Vehicle existingVehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException(id));
+
+        vehicleMapper.updateVehicle(vehicleDto, existingVehicle);
+        Vehicle updatedVehicle = vehicleRepository.save(existingVehicle);
+        log.info("Vehicle updated: {}", updatedVehicle.getId());
+        VehicleDto updatedDto = vehicleMapper.toDto(updatedVehicle);
+
+        sendVehicleEvent(updatedDto, "UPDATED");
+        return updatedDto;
     }
 
+    @Transactional
+    public void deleteVehicle(UUID id) {
+        log.info("Deleting vehicle with ID: {}", id);
+        Vehicle vehicleToDelete = vehicleRepository.findById(id)
+                .orElseThrow(() -> new VehicleNotFoundException(id));
+
+        vehicleRepository.deleteById(id);
+        log.info("Vehicle deleted: {}", id);
+
+        sendVehicleEvent(vehicleMapper.toDto(vehicleToDelete), "DELETED");
+    }
+
+    @Transactional(readOnly = true)
     public List<VehicleDto> getAllVehicles() {
-        List<Vehicle> vehicles = vehicleRepository.findAll();
-        if (vehicles.isEmpty()) {
-            LOG.info("No vehicles found");
-            return null;
-        } else {
-            return vehicles.stream()
-                    .map(vehicleMapper::toDto)
-                    .toList();
+        log.debug("Fetching all vehicles");
+        return vehicleRepository.findAll().stream()
+                .map(vehicleMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private void sendVehicleEvent(VehicleDto vehicleDto, String eventType) {
+        try {
+            Map<String, Object> eventData = Map.of(
+                    "eventType", eventType,
+                    "vehicleId", vehicleDto.getId().toString(),
+                    "driverId", vehicleDto.getDriverId().toString(),
+                    "model", vehicleDto.getModel(),
+                    "number", vehicleDto.getNumber()
+            );
+            log.info("Sending vehicle event to Kafka: {}", eventData);
+            kafkaTemplate.send(VEHICLE_EVENTS_TOPIC, vehicleDto.getId().toString(), eventData);
+        } catch (Exception e) {
+            log.error("Failed to send vehicle event for ID: {}", vehicleDto.getId(), e);
         }
     }
 }
