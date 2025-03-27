@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
-
+/**
+ * Событие, связанное с поездкой.
+ * Содержит идентификатор поездки, тип события и данные поездки.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

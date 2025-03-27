@@ -10,14 +10,22 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
+/**
+ * Kafka Consumer для обработки событий об изменении статуса платежа.
+ * Обновляет информацию о платеже в связанном заказе.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class PaymentEventConsumer {
-
     private final OrderRepository orderRepository;
 
+    /**
+     * Обрабатывает события об изменении статуса платежа.
+     * Для успешных платежей обновляет paymentId в заказе.
+     *
+     * @param event событие обновления статуса платежа
+     */
     @KafkaListener(topics = "${spring.kafka.topics.payment-events:payment-events}", groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
     public void handlePaymentStatusUpdate(PaymentStatusUpdatedEvent event) {

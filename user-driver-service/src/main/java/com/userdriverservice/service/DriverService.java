@@ -20,7 +20,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+/**
+ * Сервис для работы с водителями.
+ * Предоставляет CRUD-операции и бизнес-логику для управления водителями.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,6 +35,13 @@ public class DriverService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private static final String DRIVER_EVENTS_TOPIC = "driver-events";
 
+    /**
+     * Создает нового водителя.
+     *
+     * @param driverDto DTO с данными водителя
+     * @return созданный DriverDto
+     * @throws IllegalArgumentException если передан недопустимый статус
+     */
     @Transactional
     public DriverDto createDriver(DriverDto driverDto) {
         log.info("Attempting to create driver: {}", driverDto.getName());
@@ -50,14 +60,27 @@ public class DriverService {
         sendDriverEvent(savedDto, "CREATED");
         return savedDto;
     }
-
+    /**
+     * Получает водителя по идентификатору.
+     *
+     * @param id UUID водителя
+     * @return Optional с DriverDto, если водитель найден
+     */
     @Transactional(readOnly = true)
     public Optional<DriverDto> getDriverById(UUID id) {
         log.debug("Finding driver by id: {}", id);
         return driverRepository.findById(id).map(driverMapper::toDto);
     }
 
-
+    /**
+     * Обновляет данные водителя.
+     *
+     * @param id UUID водителя
+     * @param driverDto DTO с обновленными данными
+     * @return обновленный DriverDto
+     * @throws DriverNotFoundException если водитель не найден
+     * @throws IllegalArgumentException если передан недопустимый статус
+     */
     @Transactional
     public DriverDto updateDriver(UUID id, DriverDto driverDto) {
         log.info("Attempting to update driver with id: {}", id);
@@ -78,29 +101,33 @@ public class DriverService {
         return updatedDto;
     }
 
+    /**
+     * Получает список всех пользователей.
+     *
+     * @return список UserDto
+     */
     @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
         log.debug("Finding all users");
         List<User> users = userRepository.findAll();
-        // Не возвращаем null, возвращаем пустой список
         return users.stream()
                 .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public Optional<UserDto> getUserById(UUID id) {
-        log.debug("Finding user by id: {}", id);
-        return userRepository.findById(id).map(userMapper::toDto);
-    }
 
+    /**
+     * Удаляет водителя.
+     *
+     * @param id UUID водителя
+     * @throws DriverNotFoundException если водитель не найден
+     */
     @Transactional
     public void deleteDriver(UUID id) {
         log.info("Attempting to delete driver with id: {}", id);
         Driver driverToDelete = driverRepository.findById(id)
                 .orElseThrow(() -> new DriverNotFoundException(id));
 
-        // Сохраняем DTO перед удалением для отправки события
         DriverDto deletedDto = driverMapper.toDto(driverToDelete);
 
         driverRepository.deleteById(id);
@@ -110,6 +137,11 @@ public class DriverService {
     }
 
 
+    /**
+     * Получает список всех водителей.
+     *
+     * @return список DriverDto
+     */
     @Transactional(readOnly = true)
     public List<DriverDto> getAllDrivers() {
         log.debug("Finding all drivers");
@@ -118,8 +150,12 @@ public class DriverService {
                 .map(driverMapper::toDto)
                 .collect(Collectors.toList());
     }
-
-    // Вспомогательный метод для отправки событий
+    /**
+     * Отправляет событие о водителе в Kafka.
+     *
+     * @param driverDto DTO водителя
+     * @param eventType тип события ("CREATED", "UPDATED", "DELETED")
+     */
     private void sendDriverEvent(DriverDto driverDto, String eventType) {
         try {
             DriverEventPayload payload = new DriverEventPayload(
@@ -127,7 +163,7 @@ public class DriverService {
                     driverDto.getName(),
                     driverDto.getOrdersCompleted(),
                     driverDto.getCurrentStatus(),
-                    !"DELETED".equals(eventType) // Поле active: true для CREATED/UPDATED, false для DELETED
+                    !"DELETED".equals(eventType)
             );
             DriverEvent event = new DriverEvent(eventType, payload);
 
@@ -137,7 +173,12 @@ public class DriverService {
             log.error("Failed to send driver event to Kafka for driver id: {}. Type: {}", driverDto.getId(), eventType, e);
         }
     }
-
+    /**
+     * Проверяет валидность статуса водителя.
+     *
+     * @param status статус для проверки
+     * @return true если статус валиден, false в противном случае
+     */
     private boolean isValidStatus(String status) {
 
         return status != null && ("AVAILABLE".equals(status) || "BUSY".equals(status) || "OFFLINE".equals(status));

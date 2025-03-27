@@ -10,12 +10,21 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Kafka Consumer для обработки событий, связанных с водителями.
+ * Обновляет кэш данных о водителях на основе получаемых событий.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DriverEventConsumer {
     private final DriverCacheRepository driverCacheRepository;
-
+    /**
+     * Обрабатывает события о водителях из топика "driver-events".
+     * Поддерживает события: CREATED, UPDATED, DELETED.
+     *
+     * @param event событие в формате Map, содержащее данные о водителе
+     */
     @KafkaListener(topics = "driver-events")
     public void handleDriverEvent(Map<String, Object> event) {
         try {

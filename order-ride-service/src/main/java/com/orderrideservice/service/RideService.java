@@ -1,7 +1,7 @@
 package com.orderrideservice.service;
 import ch.qos.logback.classic.Logger;
 import com.orderrideservice.dto.RideDto;
-import com.orderrideservice.entity.*; // Импорт всех сущностей пакета
+import com.orderrideservice.entity.*;
 import com.orderrideservice.exception.DriverNotFoundException;
 import com.orderrideservice.exception.OrderNotFoundException;
 import com.orderrideservice.exception.RideNotFoundException;
@@ -9,14 +9,14 @@ import com.orderrideservice.mapper.RideMapper;
 import com.orderrideservice.repository.DriverCacheRepository;
 import com.orderrideservice.repository.OrderRepository;
 import com.orderrideservice.repository.RideRepository;
-import com.aston.commonevents.dto.RideCompletedEvent; // Импорт из общего модуля
+import com.aston.commonevents.dto.RideCompletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.orderrideservice.repository.UserRideHistoryRepository; // Добавить импорт
-import com.orderrideservice.entity.UserRideHistory; // Добавить импорт
+import com.orderrideservice.repository.UserRideHistoryRepository;
+import com.orderrideservice.entity.UserRideHistory;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,7 +25,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-
+/**
+ * Сервис для работы с поездками.
+ * Обеспечивает управление жизненным циклом поездок и интеграцию с другими сервисами.
+ */
 @Service
 @RequiredArgsConstructor
 public class RideService {
@@ -34,11 +37,19 @@ public class RideService {
     private final OrderRepository orderRepository;
     private final DriverCacheRepository driverCacheRepository;
     private final KafkaTemplate<String, Map<String, Object>> kafkaTemplate;
-    private KafkaTemplate<String, RideCompletedEvent> rideKafkaTemplate; // Типизированный KafkaTemplate
+    private KafkaTemplate<String, RideCompletedEvent> rideKafkaTemplate;
     private static final String RIDE_EVENTS_TOPIC = "ride-events";
     private static final String PAYMENT_REQUEST_TOPIC = "payment-requests";
     private final UserRideHistoryRepository userRideHistoryRepository;
 
+    /**
+     * Создает новую поездку.
+     *
+     * @param rideDto DTO с данными поездки
+     * @return созданный RideDto
+     * @throws DriverNotFoundException если водитель не найден
+     * @throws IllegalStateException если водитель неактивен
+     */
     @Transactional
     public RideDto createRide(RideDto rideDto) {
         DriverCache driver = driverCacheRepository.findById(rideDto.getDriverId())
@@ -62,44 +73,36 @@ public class RideService {
 
 
     }
-    private void createUserRideHistoryEntry(UUID userId, UUID rideId) {
-        // Проверяем, нет ли уже такой записи (используем existsById)
-        UserRideHistoryId historyId = new UserRideHistoryId(userId, rideId);
-        Logger log = null;
-        if (!userRideHistoryRepository.existsById(historyId)) {
-            UserRideHistory historyEntry = new UserRideHistory(userId, rideId);
-            // createdAt установится автоматически
-            userRideHistoryRepository.save(historyEntry);
-            log.info("Created UserRideHistory entry for user {} and ride {}", userId, rideId);
-        } else {
-            log.warn("UserRideHistory entry for user {} and ride {} already exists.", userId, rideId);
-        }
-    }
 
 
+    /**
+     * Завершает поездку и инициирует платеж.
+     *
+     * @param rideId UUID поездки
+     * @return RideDto завершенной поездки
+     * @throws RideNotFoundException если поездка не найдена
+     * @throws OrderNotFoundException если заказ не найден
+     */
     @Transactional
-    public RideDto completeRide(UUID rideId) { // Пример метода завершения
+    public RideDto completeRide(UUID rideId) {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new RideNotFoundException(rideId));
         Order order = orderRepository.findById(ride.getOrderId())
                 .orElseThrow(() -> new OrderNotFoundException(ride.getOrderId()));
 
-        // Меняем статус заказа (если еще не COMPLETED)
         if (order.getStatus() != OrderStatus.COMPLETED) {
             order.setStatus(OrderStatus.COMPLETED);
             orderRepository.save(order);
             Logger log = null;
             log.info("Order {} status set to COMPLETED", order.getId());
 
-            // --- Отправка события о завершении поездки ---
-            // TODO: Рассчитать сумму (amount) поездки
-            BigDecimal rideAmount = calculateRideAmount(ride.getDistance()); // Нужен метод расчета
+            BigDecimal rideAmount = calculateRideAmount(ride.getDistance());
 
             RideCompletedEvent event = new RideCompletedEvent(
                     ride.getId(),
                     ride.getOrderId(),
                     ride.getDriverId(),
-                    order.getUserId(), // Берем userId из заказа
+                    order.getUserId(),
                     rideAmount
             );
             try {
@@ -107,19 +110,29 @@ public class RideService {
                 rideKafkaTemplate.send(RIDE_EVENTS_TOPIC, ride.getId().toString(), event);
             } catch (Exception e) {
                 log.error("Failed to send RideCompletedEvent for ride id: {}", rideId, e);
-                // TODO: Обработка ошибок отправки
             }
         }
-        // Возвращаем обновленный RideDto или что-то другое
-        return rideMapper.toDto(ride); // dto может не содержать статус, т.к. статус у Order
+        return rideMapper.toDto(ride);
     }
 
-
+    /**
+     * Рассчитывает стоимость поездки на основе расстояния.
+     *
+     * @param distance пройденное расстояние
+     * @return сумма к оплате
+     */
     private BigDecimal calculateRideAmount(Double distance) {
         if (distance == null || distance <= 0) return BigDecimal.ZERO;
         return BigDecimal.valueOf(distance).multiply(BigDecimal.valueOf(15.5)).setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 
+
+    /**
+     * Получает поездку по идентификатору.
+     *
+     * @param id UUID поездки
+     * @return Optional с RideDto, если поездка найдена
+     */
     @Transactional(readOnly = true)
     public Optional<RideDto> getRideById(UUID id) {
         Logger log = null;
@@ -127,6 +140,11 @@ public class RideService {
         return rideRepository.findById(id).map(rideMapper::toDto);
     }
 
+    /**
+     * Получает список всех поездок.
+     *
+     * @return список RideDto
+     */
     @Transactional(readOnly = true)
     public List<RideDto> getAllRides() {
         Logger log = null;
@@ -135,16 +153,19 @@ public class RideService {
                 .map(rideMapper::toDto)
                 .collect(Collectors.toList());
     }
-
+    /**
+     * Обновляет данные поездки.
+     *
+     * @param id UUID поездки
+     * @param rideDto DTO с новыми данными
+     * @return обновленный RideDto
+     * @throws RideNotFoundException если поездка не найдена
+     */
     @Transactional
     public RideDto updateRide(UUID id, RideDto rideDto) {
         Ride existingRide = rideRepository.findById(id)
                 .orElseThrow(() -> new RideNotFoundException(id));
-
-
-        // Обновляем поля из DTO
         rideMapper.updateRide(rideDto, existingRide);
-        // TODO: Синхронизировать с Order, если нужно (например, driverId)
         Order order = orderRepository.findById(existingRide.getOrderId()).orElse(null);
         if (order != null && rideDto.getDriverId() != null && !rideDto.getDriverId().equals(order.getDriverId())) {
             order.setDriverId(rideDto.getDriverId());
@@ -154,14 +175,17 @@ public class RideService {
         Ride updatedRide = rideRepository.save(existingRide);
         return rideMapper.toDto(updatedRide);
     }
-
+    /**
+     * Удаляет поездку.
+     *
+     * @param id UUID поездки
+     * @throws RideNotFoundException если поездка не найдена
+     */
     @Transactional
     public void deleteRide(UUID id) {
         if (!rideRepository.existsById(id)) {
             throw new RideNotFoundException(id);
         }
-        // TODO: Что делать с Order? Удалять? Отменять?
-        // TODO: Удалять ли UserRideHistory? (каскадное удаление в БД?)
         rideRepository.deleteById(id);
     }
 }

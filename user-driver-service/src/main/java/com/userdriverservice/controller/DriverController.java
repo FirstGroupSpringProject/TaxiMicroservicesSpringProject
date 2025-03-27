@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Контроллер для управления водителями.
+ * Предоставляет REST API для операций CRUD с водителями.
+ */
 @RestController
 @RequestMapping("/api/v1/drivers")
 @RequiredArgsConstructor
@@ -21,6 +25,12 @@ public class DriverController {
     private final DriverService driverService;
     private static final Logger LOG = LoggerFactory.getLogger(DriverController.class);
 
+    /**
+     * Создает нового водителя.
+     *
+     * @param driverDto DTO с данными водителя
+     * @return ResponseEntity с созданным DriverDto и статусом 201 (Created)
+     */
     @PostMapping
     public ResponseEntity<DriverDto> createDriver(@RequestBody DriverDto driverDto) {
         LOG.info("Creating driver: {}", driverDto);
@@ -28,7 +38,13 @@ public class DriverController {
         LOG.info("Driver created: {}", createdDriver);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDriver);
     }
-
+    /**
+     * Получает водителя по идентификатору.
+     *
+     * @param id UUID водителя
+     * @return ResponseEntity с DriverDto и статусом 200 (OK), если найден,
+     *         или статусом 404 (Not Found), если не найден
+     */
     @GetMapping("/{id}")
     public ResponseEntity<DriverDto> getDriverById(@PathVariable UUID id) {
         LOG.info("Getting driver by id: {}", id);
@@ -43,6 +59,12 @@ public class DriverController {
                 });
     }
 
+    /**
+     * Получает список всех водителей.
+     *
+     * @return ResponseEntity со списком DriverDto и статусом 200 (OK),
+     *         или статусом 204 (No Content), если водители не найдены
+     */
     @GetMapping
     public ResponseEntity<List<DriverDto>> getDrivers() {
         LOG.info("Getting all drivers");
@@ -55,6 +77,15 @@ public class DriverController {
         return ResponseEntity.ok(driverDtoList);
     }
 
+    /**
+     * Обновляет данные водителя.
+     *
+     * @param id UUID водителя
+     * @param driverDto DTO с обновленными данными
+     * @return ResponseEntity с обновленным DriverDto и статусом 200 (OK),
+     *         или статусом 404 (Not Found), если водитель не найден,
+     *         или статусом 500 (Internal Server Error) при ошибке
+     */
     @PutMapping("/{id}")
     public ResponseEntity<DriverDto> updateDriver(@PathVariable UUID id, @RequestBody DriverDto driverDto) {
         LOG.info("Updating driver with id: {}, data: {}", id, driverDto);
@@ -71,6 +102,15 @@ public class DriverController {
         }
     }
 
+
+    /**
+     * Удаляет водителя.
+     *
+     * @param id UUID водителя
+     * @return ResponseEntity со статусом 204 (No Content) при успешном удалении,
+     *         или статусом 404 (Not Found), если водитель не найден,
+     *         или статусом 500 (Internal Server Error) при ошибке
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDriver(@PathVariable UUID id) {
         LOG.info("Deleting driver with id: {}", id);

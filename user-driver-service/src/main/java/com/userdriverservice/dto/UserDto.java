@@ -3,7 +3,10 @@ package com.userdriverservice.dto;
 import lombok.Data;
 
 import java.util.UUID;
-
+/**
+ * DTO для представления данных пользователя.
+ * Используется для передачи информации о пользователе между слоями приложения.
+ */
 @Data
 public class UserDto {
 

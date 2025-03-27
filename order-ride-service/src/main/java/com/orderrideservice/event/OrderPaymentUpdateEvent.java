@@ -6,6 +6,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Событие обновления статуса платежа для заказа.
+ * Содержит информацию о заказе, платеже и его новом статусе.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

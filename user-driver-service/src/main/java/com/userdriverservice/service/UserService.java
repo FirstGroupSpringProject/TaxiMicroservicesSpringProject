@@ -18,7 +18,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+/**
+ * Сервис для работы с пользователями.
+ * Предоставляет CRUD-операции и бизнес-логику для управления пользователями.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,6 +35,12 @@ public class UserService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
 
+    /**
+     * Создает нового пользователя.
+     *
+     * @param userDto DTO с данными пользователя
+     * @return созданный UserDto
+     */
     @Transactional
     public UserDto createUser(UserDto userDto) {
 
@@ -54,7 +63,15 @@ public class UserService {
 
         return savedDto;
     }
-
+    /**
+     * Обновляет данные пользователя.
+     *
+     * @param id UUID пользователя
+     * @param userDto DTO с обновленными данными
+     * @return обновленный UserDto
+     * @throws UserNotFoundException если пользователь не найден
+     * @throws RuntimeException если телефонный номер уже существует
+     */
     @Transactional
     public UserDto updateUser(UUID id, UserDto userDto) {
         log.info("Attempting to update user with id: {}", id);
@@ -74,11 +91,25 @@ public class UserService {
         log.info("User updated successfully: {}", updatedUser.getId());
         return userMapper.toDto(updatedUser);
     }
+
+    /**
+     * Получает пользователя по идентификатору.
+     *
+     * @param id UUID пользователя
+     * @return Optional с UserDto, если пользователь найден
+     */
     @Transactional(readOnly = true)
     public Optional<UserDto> getUserById(UUID id) {
         log.debug("Fetching user by ID: {}", id);
         return userRepository.findById(id).map(userMapper::toDto);
     }
+
+    /**
+     * Получает пользователя по телефонному номеру.
+     *
+     * @param phone телефонный номер
+     * @return UserDto пользователя или null, если не найден
+     */
     @Transactional(readOnly = true)
     public UserDto getUserByPhone(String phone) {
         log.debug("Finding user by phone: {}", phone);
@@ -89,7 +120,12 @@ public class UserService {
         return userMapper.toDto(user);
     }
 
-
+    /**
+     * Удаляет пользователя.
+     *
+     * @param id UUID пользователя
+     * @throws UserNotFoundException если пользователь не найден
+     */
     @Transactional
     public void deleteUser(UUID id) {
         log.info("Deleting user with ID: {}", id);
@@ -101,7 +137,11 @@ public class UserService {
 
         sendUserEvent(userMapper.toDto(userToDelete), "DELETED");
     }
-
+    /**
+     * Получает список всех пользователей.
+     *
+     * @return список UserDto
+     */
     @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
         log.debug("Fetching all users");
@@ -110,6 +150,13 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     * Отправляет событие о пользователе в Kafka.
+     *
+     * @param userDto DTO пользователя
+     * @param eventType тип события ("CREATED", "UPDATED", "DELETED")
+     */
     private void sendUserEvent(UserDto userDto, String eventType) {
         try {
             Map<String, Object> eventData = Map.of(

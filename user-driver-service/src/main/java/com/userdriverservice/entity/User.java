@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Сущность пользователя.
+ * Представляет данные пользователя в системе и отображается на таблицу "users" в базе данных.
+ */
 @Entity
 @Data
 @AllArgsConstructor

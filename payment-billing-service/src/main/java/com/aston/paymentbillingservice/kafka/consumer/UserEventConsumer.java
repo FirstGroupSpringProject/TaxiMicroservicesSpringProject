@@ -12,15 +12,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-
+/**
+ * Kafka Consumer для обработки событий о пользователях.
+ * Создает начальные счета для новых пользователей.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserEventConsumer {
-
     private final ServiceInterface<InvoiceDto> invoiceService;
     private final InvoiceRepository invoiceRepository;
 
+    /**
+     * Обрабатывает событие создания пользователя.
+     *
+     * @param event событие UserCreatedEvent
+     */
     @KafkaListener(topics = "${spring.kafka.topics.user-events:user-events}", groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
     public void handleUserCreated(UserCreatedEvent event) {
@@ -42,7 +49,6 @@ public class UserEventConsumer {
             log.info("Created initial invoice {} for user {}", savedInvoice.getId(), event.getUserId());
 
         } catch (Exception e) {
-            // РЕАЛИЗОВАНО TODO: Handle General Exception
             log.error("Error processing UserCreatedEvent for userId={}. Error: {}",
                     event.getUserId(), e.getMessage(), e);
             throw new RuntimeException("Failed to process UserCreatedEvent: " + e.getMessage(), e);

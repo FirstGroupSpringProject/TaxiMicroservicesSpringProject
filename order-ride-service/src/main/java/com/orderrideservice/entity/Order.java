@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Сущность заказа.
+ * Представляет заказ в системе с информацией о пользователе, водителе и платеже.
+ */
 @Entity
 @Data
 @AllArgsConstructor

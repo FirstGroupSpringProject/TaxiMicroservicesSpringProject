@@ -7,6 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+
+/**
+ * Сущность транспортного средства.
+ * Представляет данные транспортного средства в системе и отображается на таблицу "vehicles" в базе данных.
+ */
 @Entity
 @Data
 @AllArgsConstructor

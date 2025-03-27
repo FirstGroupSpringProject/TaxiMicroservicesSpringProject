@@ -8,6 +8,10 @@ import lombok.Data;
 
 import java.util.UUID;
 
+/**
+ * Сущность для кэширования информации о водителе.
+ * Хранит часто запрашиваемые данные для быстрого доступа.
+ */
 @Entity
 @Table(name = "driver_cache")
 @Data

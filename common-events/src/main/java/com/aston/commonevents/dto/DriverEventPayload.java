@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.UUID;
 
+/**
+ * Содержит информацию о водителе, его статусе и активности.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Сущность поездки.
+ * Содержит информацию о выполнении заказа водителем.
+ */
 @Entity
 @Data
 @AllArgsConstructor

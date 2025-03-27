@@ -6,6 +6,10 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Событие обновления статуса платежа.
+ * Содержит информацию о платеже, заказе, пользователе и сумме.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

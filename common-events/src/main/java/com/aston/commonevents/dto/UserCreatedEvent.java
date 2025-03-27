@@ -5,6 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.UUID;
 
+/**
+ * Событие создания пользователя.
+ * Содержит основную информацию о новом пользователе.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

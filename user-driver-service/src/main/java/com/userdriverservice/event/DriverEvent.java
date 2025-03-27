@@ -8,6 +8,10 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+/**
+ * Событие, связанное с водителем.
+ * Содержит информацию о событии изменения данных водителя.
+ */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * Сущность водителя.
+ * Представляет данные водителя в системе и отображается на таблицу "drivers" в базе данных.
+ */
 @Entity
 @Data
 @AllArgsConstructor

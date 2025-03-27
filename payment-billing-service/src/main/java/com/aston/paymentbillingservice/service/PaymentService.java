@@ -4,8 +4,6 @@ import ch.qos.logback.classic.Logger;
 import com.aston.paymentbillingservice.dto.PaymentDto;
 import com.aston.paymentbillingservice.entity.Payment;
 import com.aston.paymentbillingservice.entity.PaymentStatus;
-import com.aston.commonevents.dto.DriverEvent; // Импорт из общего модуля
-import com.aston.commonevents.dto.DriverEventPayload; // Импорт из общего модуля
 import com.aston.paymentbillingservice.event.PaymentStatusUpdatedEvent;
 import com.aston.paymentbillingservice.mapper.Mapper;
 import com.aston.paymentbillingservice.repository.PaymentRepository;
@@ -101,8 +99,6 @@ public class PaymentService implements ServiceInterface<PaymentDto> {
         Optional<Payment> paymentOpt = paymentRepository.findById(id);
         if (paymentOpt.isPresent()) {
             paymentRepository.deleteById(id);
-
-            // TODO: Отправлять ли PaymentDeletedEvent? (Обычно нет)
             return paymentOpt.map(paymentMapper::toDto);
         } else {
 ;
